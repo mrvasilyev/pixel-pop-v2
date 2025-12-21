@@ -1,0 +1,241 @@
+:root {
+    --background-color: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: #aaaaaa;
+    --accent-color: #007aff;
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    /* Prevent body scroll, handle in main-screen */
+}
+
+.main-screen {
+    height: var(--tg-viewport-stable-height, 100vh);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: var(--tg-content-safe-area-inset-top);
+    padding-bottom: var(--safe-area-bottom);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Header Section */
+.header {
+    width: 100%;
+    padding: 24px 16px;
+    /* Modern premium background */
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    position: relative;
+    overflow: hidden;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    height: 100px;
+    display: flex;
+    /* Ensure content aligns if needed */
+    flex-direction: column;
+    justify-content: center;
+    /* Center content vertically if 100px is taller than content */
+}
+
+/* Add a subtle aesthetic glow/blob */
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 122, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.header-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(90deg, #fff, #ccc);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+    margin-bottom: 16px;
+}
+
+.header-button {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.header-button:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+}
+
+/* Section Containers */
+.section-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section-header {
+    padding: 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Horizontal Scroll List (Top Styles) */
+/* Horizontal Scroll List (Top Styles) */
+.h-scroll-list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 16px;
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+.h-scroll-list::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.top-style-card {
+    flex: 0 0 auto;
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.top-style-img {
+    width: 100px;
+    height: 133px;
+    /* 3:4 aspect ratio */
+    border-radius: 12px;
+    object-fit: cover;
+    background-color: #333;
+}
+
+.top-style-title {
+    font-size: 13px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* Discover Styles Grid (Horizontal Scroll with 3 rows) */
+.discover-grid-container {
+    display: grid;
+    grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 0 16px;
+    scrollbar-width: none;
+}
+
+.discover-grid-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Discover Card - Mapped from User's Tailwind Snippet 
+   w-72 inline-flex justify-start items-center gap-4
+*/
+.discover-card {
+    width: 18rem;
+    /* w-72 */
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+    /* gap-4 */
+    background-color: transparent;
+    /* No bg requested */
+    padding: 8px;
+    border-radius: 12px;
+}
+
+/* w-12 h-12 rounded-[10px] */
+.discover-img {
+    width: 3rem;
+    /* w-12 */
+    height: 3rem;
+    /* h-12 */
+    border-radius: 10px;
+    object-fit: cover;
+    background-color: #333;
+}
+
+/* flex-1 justify-start text-white text-xs font-normal font-['Inter'] */
+.discover-text {
+    flex: 1;
+    justify-content: flex-start;
+    /* effectively default for block/flex item */
+    color: white;
+    font-size: 0.75rem;
+    /* text-xs */
+    font-weight: 400;
+    /* font-normal */
+    font-family: 'Inter', sans-serif;
+}
+
+/* Gallery Grid */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    /* Tight gap for gallery look */
+    padding: 0 2px;
+}
+
+.gallery-item {
+    aspect-ratio: 1;
+    background-color: #222;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
