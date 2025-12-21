@@ -224,7 +224,7 @@ body {
     grid-template-columns: repeat(3, 1fr);
     gap: 2px;
     /* Tight gap for gallery look */
-    padding: 0 2px;
+    padding: 8px 2px 0 2px;
 }
 
 .gallery-item {
