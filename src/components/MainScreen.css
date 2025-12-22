@@ -31,6 +31,10 @@ body {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    position: relative;
+    /* Create stacking context */
+    z-index: 1;
+    /* Lift above body background */
 }
 
 /* Header Section */
@@ -38,12 +42,12 @@ body {
     width: 100%;
     padding: 24px 16px;
     /* Modern premium background */
-    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
     position: relative;
     overflow: hidden;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
-    height: 100px;
+    height: 150px !important;
+    /* Force height to override potential conflicts */
+    min-height: 150px;
+    /* Ensure it cannot be smaller */
     display: flex;
     /* Ensure content aligns if needed */
     flex-direction: column;
@@ -51,18 +55,7 @@ body {
     /* Center content vertically if 100px is taller than content */
 }
 
-/* Add a subtle aesthetic glow/blob */
-.header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(0, 122, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
-    z-index: 0;
-    pointer-events: none;
-}
+/* Removed subtle aesthetic glow/blob to allow full app background visibility */
 
 .header-content {
     position: relative;
@@ -70,7 +63,25 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    align-items: flex-start;
+    align-items: center;
+    width: 100%;
+    flex: 1;
+    /* Correctly fill available vertical space in flex parent */
+    min-height: 0;
+    /* Allow shrinking below content size if needed */
+    justify-content: center;
+}
+
+.header-logo {
+    height: 100%;
+    /* Force image to take full available height */
+    width: auto;
+    /* Maintain aspect ratio */
+    max-width: 100%;
+    /* Prevent horizontal overflow */
+    object-fit: contain;
+    /* Scale content to fit nicely inside */
+    display: block;
 }
 
 .header-title {
@@ -159,7 +170,7 @@ body {
 .top-style-title {
     font-size: 13px;
     text-align: center;
-    color: var(--text-secondary);
+    color: #ffffff;
 }
 
 /* Discover Styles Grid (Horizontal Scroll with 3 rows) */
@@ -167,7 +178,7 @@ body {
     display: grid;
     grid-template-rows: repeat(3, auto);
     grid-auto-flow: column;
-    gap: 12px;
+    gap: 0px;
     overflow-x: auto;
     padding: 0 16px;
     scrollbar-width: none;
@@ -211,8 +222,8 @@ body {
     justify-content: flex-start;
     /* effectively default for block/flex item */
     color: white;
-    font-size: 0.75rem;
-    /* text-xs */
+    font-size: 13px;
+    /* text-xs -> 13px */
     font-weight: 400;
     /* font-normal */
     font-family: 'Inter', sans-serif;
@@ -221,8 +232,8 @@ body {
 /* Gallery Grid */
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
     /* Tight gap for gallery look */
     padding: 8px 2px 0 2px;
 }
@@ -230,7 +241,7 @@ body {
 .gallery-item {
     aspect-ratio: 1;
     background-color: #222;
-    border-radius: 4px;
+    border-radius: 0px;
     overflow: hidden;
 }
 
@@ -238,4 +249,129 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Header Controls */
+.header-control-left {
+    position: absolute;
+    top: 24px;
+    left: 16px;
+    z-index: 10;
+}
+
+.header-control-right {
+    position: absolute;
+    top: 24px;
+    right: 16px;
+    z-index: 10;
+}
+
+.star-counter {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    /* Background removed */
+    /* Backdrop filter removed */
+    padding: 6px 0;
+    /* Reduced padding since no bg */
+    border-radius: 16px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+
+.star-icon-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.info-button {
+    background: transparent;
+    backdrop-filter: none;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    cursor: pointer;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    pointer-events: auto;
+}
+
+/* Popup Styles */
+.info-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.info-popup-content {
+    background: #1c1c1d;
+    /* Dark theme bg */
+    width: 100%;
+    max-width: 300px;
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+}
+
+.close-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+}
+
+.popup-title {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.popup-version {
+    color: var(--accent-color);
+    font-size: 15px;
+    margin-bottom: 16px;
+}
+
+.popup-details {
+    font-size: 13px;
+    line-height: 1.5;
+    color: #cccccc;
+    margin: 0 0 24px 0;
+}
+
+.popup-sub {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+.popup-footer {
+    font-size: 12px;
+    color: #666;
+}
+
+.uppercase {
+    text-transform: uppercase;
 }

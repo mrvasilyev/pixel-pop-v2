@@ -66,8 +66,8 @@ function AppInitializer() {
                 if (shouldMock) {
                     const platform = forcePlatform || 'unknown';
 
-                    // Mock Safe Areas for specific platforms if debug mode is on
-                    if (isDebug) {
+                    // Mock Safe Areas if debug is on OR if a platform is forced (for visual testing)
+                    if (isDebug || forcePlatform) {
                         const MOCK_SAFE_AREAS = {
                             ios: { top: 47, bottom: 34, left: 0, right: 0 },
                             android: { top: 24, bottom: 0, left: 0, right: 0 },
@@ -258,7 +258,7 @@ function AppInitializer() {
             let mockSafe = { top: 0, bottom: 0, left: 0, right: 0 };
             let mockContent = { top: 0, bottom: 0, left: 0, right: 0 };
 
-            if (isDebug) {
+            if (isDebug || (mockPlatform && mockPlatform !== 'unknown')) {
                 const MOCK_SAFE_AREAS = {
                     ios: { top: 47, bottom: 34, left: 0, right: 0 },
                     android: { top: 24, bottom: 0, left: 0, right: 0 },
