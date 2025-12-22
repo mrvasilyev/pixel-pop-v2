@@ -1,0 +1,7 @@
+{
+  "title": "Remove people in the background",
+  "cover": "/images/discover/remove-people-in-the-background/cover.png",
+  "prompt": "Remove any people in the background while keeping the main subject unchanged. Fill in the background naturally so it looks like the people were never there.",
+  "order": 8,
+  "hasPrompt": true
+}

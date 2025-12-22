@@ -1,0 +1,7 @@
+{
+  "title": "Inkwork",
+  "cover": "/images/styles/inkwork/cover.png",
+  "prompt": "Create a black-and-white ink illustration of the subject or image using bold brushstrokes, expressive linework, and dynamic movement. If a person is present, keep their form recognizable; otherwise, translate the scene or object using the same high-contrast ink style.",
+  "order": 9,
+  "hasPrompt": true
+}

@@ -165,6 +165,7 @@ body {
     border-radius: 12px;
     object-fit: cover;
     background-color: #333;
+    background-position: center;
 }
 
 .top-style-title {
@@ -374,4 +375,75 @@ body {
 
 .uppercase {
     text-transform: uppercase;
+}
+
+/* Gallery Empty State */
+.gallery-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px 16px;
+    /* background removed */
+    /* border removed */
+    margin: 8px 16px;
+}
+
+.empty-icon-bg {
+    width: 80px;
+    height: 80px;
+    /* background removed */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.gallery-empty-state h3 {
+    margin: 0 0 6px 0;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.gallery-empty-state p {
+    margin: 0 0 20px 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    max-width: 200px;
+}
+
+.cta-button {
+    background: #FF01FF;
+    height: 48px;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0 32px;
+    border-radius: 999px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(255, 1, 255, 0.5);
+    font-family: inherit;
+}
+
+.lollipop-spinner {
+    animation: spin-zoom 3s linear infinite;
+}
+
+@keyframes spin-zoom {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+
+    50% {
+        transform: rotate(180deg) scale(0.7);
+    }
+
+    100% {
+        transform: rotate(360deg) scale(1);
+    }
 }

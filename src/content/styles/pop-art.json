@@ -1,0 +1,7 @@
+{
+  "title": "Pop Art",
+  "cover": "/images/styles/pop-art/cover.png",
+  "prompt": "A portrait of the subject in a 1960s comic-book pop-art style, illustrated with bold black contour lines, flat saturated primary colors, and dense halftone dot shading. Facial features should appear expressive, stylized, and slightly exaggerated, as if captured in a dramatic mid-panel moment. Use a clean, graphic composition with strong pop-art energy and vintage print charm. The artwork must be full-bleed — no borders.",
+  "order": 12,
+  "hasPrompt": true
+}

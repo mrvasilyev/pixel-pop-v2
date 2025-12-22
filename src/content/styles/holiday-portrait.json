@@ -1,0 +1,7 @@
+{
+  "title": "Holiday Portrait",
+  "cover": "/images/styles/holiday-portrait/cover.png",
+  "prompt": "Transform the uploaded photo into a warm, polished Holiday portrait. Keep the person's REAL face, skin tone, expression, and features exactly the same. Restyle them in soft holiday lighting with gentle golden highlights. Surround them with festive elements like evergreen branches, warm twinkle lights, and a subtle bokeh glow. Add rich reds, forest greens, and cozy textures reminiscent of classic holiday cards. The final image should feel elegant, warm, and timeless — not cartoonish.",
+  "order": 3,
+  "hasPrompt": true
+}

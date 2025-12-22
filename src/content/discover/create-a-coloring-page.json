@@ -1,0 +1,7 @@
+{
+  "title": "Create a coloring page",
+  "cover": "/images/discover/create-a-coloring-page/cover.jpg",
+  "prompt": "Using the input photo as a loose reference for pose and composition, create a square, black-and-white holiday coloring book illustration. Render the subjects in a simplified, friendly illustration style with clean, bold outlines, minimal detail, and no shading or gray tones. Add light holiday elements such as wrapped presents, ornaments, or a decorated tree in the background, keeping the scene uncluttered. Use consistent line weight, smooth contours, large open shapes, and a clear border so the page is easy and relaxing to color.",
+  "order": 2,
+  "hasPrompt": true
+}

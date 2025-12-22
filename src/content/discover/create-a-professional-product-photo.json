@@ -1,0 +1,7 @@
+{
+  "title": "Create a professional product photo",
+  "cover": "/images/discover/create-a-professional-product-photo/cover.png",
+  "prompt": "Create a high-end commercial product photo of an item in the image: perfectly upright, three-quarter view, fully visible, floating slightly above a pure white background. Use studio composite lighting (soft fill + directional highlights) with controlled HDR-like tonal separation and immaculate edge integrity. No logos, text, or brand-coded elements visible. Deep focus across the product (no background blur). Clean, premium, retouched realism.",
+  "order": 12,
+  "hasPrompt": true
+}

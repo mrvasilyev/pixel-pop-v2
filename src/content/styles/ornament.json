@@ -1,0 +1,7 @@
+{
+  "title": "Ornament",
+  "cover": "/images/styles/ornament/cover.png",
+  "prompt": "Turn this into an ornament sculpted from glossy molded glass, finished in a high-shine lacquer that catches light from every angle. Its surface feels perfectly smooth and cool, with a weight that suggests fragility and permanence at once. The coating is a lustrous enamel, somewhere between ceramic and a candy shell—reflective enough that small highlights bloom across its curves like soft sparks. Include a visible metallic ornament topper and attachment loop placed directly on the very top center of the person or object, aligned on the vertical axis. The topper should be clearly visible, emerging cleanly from the top and designed for hanging without disrupting the overall form. Make the background color similar to the input image.",
+  "order": 10,
+  "hasPrompt": true
+}

@@ -1,0 +1,7 @@
+{
+  "title": "Redecorate my room",
+  "cover": "/images/discover/redecorate-my-room/cover.png",
+  "prompt": "Using the photo of this room, add new furniture in a cohesive, realistic way. Keep the existing layout, architecture, and lighting intact. Introduce thoughtfully chosen pieces that matches the room's style and scale—for example: a sofa, armchair, side table, art, bookshelf, or console. Ensure correct perspective, natural shadows, and seamless integration. Preserve all original objects unless the request specifies removal. Show the updated room as a single, polished interior design visualization.",
+  "order": 10,
+  "hasPrompt": true
+}

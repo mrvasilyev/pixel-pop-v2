@@ -14,11 +14,13 @@ export default config({
     },
     singletons: {
         header: singleton({
-            label: 'Main Header',
+            label: 'Main',
             path: 'src/content/header',
             format: { data: 'json' },
             schema: {
                 title: fields.text({ label: 'Title' }),
+                ctaButtonText: fields.text({ label: 'Button Title' }),
+                specialPrompt: fields.text({ label: 'Special Prompt', multiline: true }),
                 logo: fields.image({
                     label: 'Logo',
                     directory: 'public/images/header',
@@ -38,6 +40,7 @@ export default config({
             slugField: 'title',
             path: 'src/content/styles/*',
             format: 'json',
+            columns: ['title', 'order', 'hasPrompt'],
             schema: {
                 title: fields.slug({ name: { label: 'Title' } }),
                 cover: fields.image({
@@ -47,6 +50,7 @@ export default config({
                 }),
                 prompt: fields.text({ label: 'Prompt (API)', multiline: true }),
                 order: fields.integer({ label: 'Sort Order', defaultValue: 0 }),
+                hasPrompt: fields.checkbox({ label: 'Prompt Ready', defaultValue: false }),
                 content: fields.markdoc({ label: 'Description' }),
             },
         }),
@@ -55,6 +59,7 @@ export default config({
             slugField: 'title',
             path: 'src/content/discover/*',
             format: 'json',
+            columns: ['title', 'order', 'hasPrompt'],
             schema: {
                 title: fields.slug({ name: { label: 'Title' } }),
                 cover: fields.image({
@@ -64,6 +69,7 @@ export default config({
                 }),
                 prompt: fields.text({ label: 'Prompt (API)', multiline: true }),
                 order: fields.integer({ label: 'Sort Order', defaultValue: 0 }),
+                hasPrompt: fields.checkbox({ label: 'Prompt Ready', defaultValue: false }),
                 content: fields.markdoc({ label: 'Description' }),
             },
         }),

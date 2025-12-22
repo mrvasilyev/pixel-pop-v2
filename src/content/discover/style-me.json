@@ -1,0 +1,7 @@
+{
+  "title": "Style me",
+  "cover": "/images/discover/style-me/cover.png",
+  "prompt": "Swap the person’s outfit for one that suits them aesthetically. Choose clothing that complements their face, hair, proportions, and overall vibe. Keep the pose, expression, lighting, and identity unchanged. Ensure the new outfit feels natural, flattering, and well-styled.",
+  "order": 3,
+  "hasPrompt": true
+}
