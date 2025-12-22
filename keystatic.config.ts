@@ -1,7 +1,7 @@
 import { config, fields, collection, singleton } from '@keystatic/core';
 
 export default config({
-    storage: import.meta.env.PROD
+    storage: (import.meta.env?.PROD)
         ? {
             kind: 'github',
             repo: 'mrvasilyev/pixel-pop-v2',

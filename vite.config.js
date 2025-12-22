@@ -90,9 +90,57 @@ function readBody(req) {
   });
 }
 
+
+
+const generationMiddleware = () => {
+  return {
+    name: 'generation-middleware',
+    configureServer(server) {
+      server.middlewares.use('/api/generation', async (req, res, next) => {
+        console.log(`[Middleware] Hit /api/generation path. Method: ${req.method} URL: ${req.url}`);
+        if (req.method === 'POST') {
+          try {
+            const bodyBuffer = await readBody(req);
+            const body = JSON.parse(bodyBuffer.toString());
+            
+            console.log('----------------------------------------');
+            console.log('📷 GENERATION REQUEST RECEIVED');
+            console.log('Model:', body.model_config.model);
+            console.log('Quality:', body.model_config.quality);
+            console.log('Prompt:', body.prompt);
+            console.log('Style ID:', body.style_id);
+            console.log('----------------------------------------');
+
+            // Simulate High Quality generation delay (e.g. 2-3 seconds)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            const response = {
+              status: 'success',
+              image_url: 'https://placehold.co/1024x1024/png?text=AI+Generated+Image', // Mock response
+              metadata: {
+                model: body.model_config.model,
+                tokens_used: 4160 // Example for High Quality
+              }
+            };
+
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(response));
+          } catch (err) {
+            console.error('Generation Middleware Error:', err);
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: 'Internal Server Error' }));
+          }
+        } else {
+          next();
+        }
+      });
+    }
+  };
+};
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), keystaticMiddleware()],
+  plugins: [generationMiddleware(), react(), keystaticMiddleware()],
   server: {
     port: 5174,
     strictPort: true,
