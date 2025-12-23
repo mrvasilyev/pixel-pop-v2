@@ -10,24 +10,7 @@ function Admin() {
   return <Keystatic config={config} />;
 }
 
-import { useState, useEffect } from 'react';
-import SplashScreen from './components/SplashScreen';
-
 function MainScreen() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 3500); // 3.5 seconds wait
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SplashScreen visible={true} />;
-  }
-
   return (
     <div className="main-screen">
       <Header />

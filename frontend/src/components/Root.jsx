@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import App from '../App.jsx';
 import SafeAreaDebug from './SafeAreaDebug.jsx';
 import { Component } from 'react';
+import SplashScreen from './SplashScreen';
 
 // Error Boundary for safety
 class ErrorBoundary extends Component {
@@ -49,6 +50,7 @@ const SafeDebugWrapper = () => {
 function AppInitializer() {
     const [isSDKReady, setSDKReady] = useState(false);
     const [initError, setInitError] = useState(null);
+    const [minLoadComplete, setMinLoadComplete] = useState(false);
     const isInitStarted = useRef(false);
 
     useEffect(() => {
@@ -369,8 +371,21 @@ function AppInitializer() {
         return <div style={{ padding: 20, color: 'red' }}>Failed to initialize Telegram SDK.</div>;
     }
 
-    if (!isSDKReady) {
-        return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#000', color: '#fff' }}>Loading...</div>;
+
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setMinLoadComplete(true);
+        }, 3500); // 3.5s minimum splash time as requested
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (initError) {
+        return <div style={{ padding: 20, color: 'red' }}>Failed to initialize Telegram SDK.</div>;
+    }
+
+    if (!isSDKReady || !minLoadComplete) {
+        return <SplashScreen visible={true} />;
     }
 
     return (

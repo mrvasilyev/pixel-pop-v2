@@ -1,4 +1,3 @@
-```javascript
 import React from 'react';
 import './SplashScreen.css';
 
@@ -15,4 +14,3 @@ const SplashScreen = ({ visible }) => {
 };
 
 export default SplashScreen;
-```
