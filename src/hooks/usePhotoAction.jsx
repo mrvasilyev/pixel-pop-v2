@@ -6,7 +6,7 @@ import { useCallback, useRef } from 'react';
  * - triggerPhotoAction(title): Function to open the dialog
  * - PhotoInputs: Component to render hidden inputs (must be rendered in the parent)
  */
-export const usePhotoAction = () => {
+export const usePhotoAction = (options = {}) => {
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
 
@@ -15,17 +15,8 @@ export const usePhotoAction = () => {
 
         const fallback = () => {
             console.warn('Telegram WebApp not detected or showPopup not supported, using fallback confirm');
-            // Simple fallback: just open file picker directly since we can't do a nice 3-button dialog
-            // A standard confirm is "OK/Cancel", so we map OK -> Gallery, Cancel -> Camera? It's confusing.
-            // Better to just asking "Take a photo?" -> OK=Camera, Cancel=Gallery?
-            // Let's stick to "Gallery" as primary action if we can't ask.
-            // Or use a simple confirm "Use Camera? (Cancel for Gallery)"
-            const useCamera = window.confirm(`${title}\n\nDo you want to take a new selfie?\n\nOK = Camera\nCancel = Gallery`);
-            if (useCamera) {
-                cameraInputRef.current?.click();
-            } else {
-                fileInputRef.current?.click();
-            }
+            // Fallback: Directly open the file picker (which usually offers Camera option on mobile)
+            fileInputRef.current?.click();
         };
 
         if (webApp && webApp.showPopup && typeof webApp.isVersionAtLeast === 'function' && webApp.isVersionAtLeast('6.2')) {
@@ -58,9 +49,11 @@ export const usePhotoAction = () => {
         const file = e.target.files[0];
         if (file) {
             console.log("File selected:", file);
-            // TODO: Handle the file (upload, preview, etc.)
-            // The user request didn't specify what to do WITH the file, just to open the dialog.
-            // For now we just log it. 
+            if (options.onPhotoSelected) {
+                options.onPhotoSelected(file);
+            }
+            // Reset input so same file can be selected again
+            e.target.value = '';
         }
     };
 

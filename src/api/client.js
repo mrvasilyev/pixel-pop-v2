@@ -11,7 +11,7 @@ const getTelegramInitData = () => {
 
 let accessToken = null;
 
-async function login() {
+export async function login() {
   if (accessToken) return accessToken;
   
   const initData = getTelegramInitData();
@@ -27,7 +27,7 @@ async function login() {
   return accessToken;
 }
 
-export const generateImage = async (prompt, styleId) => {
+export const generateImage = async (prompt, styleId, slug, extraConfig = {}) => {
   try {
     const token = await login();
     
@@ -40,11 +40,13 @@ export const generateImage = async (prompt, styleId) => {
       },
       body: JSON.stringify({
         prompt: prompt,
+        slug: slug, // Pass slug for DB tracking
         model_config: {
           model: 'gpt-image-1.5',
           quality: 'high',
           size: '1024x1024',
-          style_id: styleId
+          style_id: styleId,
+          ...extraConfig
         }
       })
     });
@@ -92,4 +94,45 @@ export const generateImage = async (prompt, styleId) => {
     console.error('Error in generateImage:', error);
     throw error;
   }
+};
+
+// 3. Upload Image
+export const uploadImage = async (file) => {
+    try {
+        const token = await login();
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+                // Content-Type is auto-set by browser for FormData
+            },
+            body: formData
+        });
+
+        if (!res.ok) throw new Error(`Upload failed: ${await res.text()}`);
+        const data = await res.json();
+        return data.url;
+    } catch (error) {
+        console.error("Error in uploadImage:", error);
+        throw error;
+    }
+};
+
+// 4. Fetch History
+export const fetchGenerations = async () => {
+    try {
+        const token = await login();
+        const res = await fetch('/api/generations', {
+             headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to fetch history');
+        return await res.json();
+    } catch (error) {
+        console.error("Fetch history failed:", error);
+        return [];
+    }
 };

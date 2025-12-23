@@ -11,4 +11,9 @@ sqlalchemy
 pytest
 pytest-asyncio
 httpx
+httpx
 requests
+supabase
+pyjwt
+python-multipart
+Pillow

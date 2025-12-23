@@ -73,6 +73,7 @@ sequenceDiagram
     -   `POST /api/auth/login`: Validates Telegram `initData` (HMAC-SHA256) -> Returns JWT.
     -   `POST /api/generation`: Validates JWT -> Checks Credits -> Enqueues Job (Redis) -> Returns Job ID (`202 Accepted`).
     -   `GET /api/generation/{job_id}`: Validates JWT -> Checks DB for status/result.
+    -   `GET /api/generations`: Validates JWT -> Returns user's generation history (from Supabase).
 
 ### 2. Background Worker (Service B)
 -   **Scalability**: Can run `N` worker instances on Railway.

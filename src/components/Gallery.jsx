@@ -3,44 +3,49 @@ import './MainScreen.css';
 import { Sparkles, Lollipop } from 'lucide-react';
 import headerData from '../content/header.json';
 import { generateImage } from '../api/client';
+import { useGallery } from '../hooks/useGallery';
+import PreviewModal from './PreviewModal'; // New Import
+import ManifestingImage from './ManifestingImage'; // New Import
 
 import { usePhotoAction } from '../hooks/usePhotoAction';
 
+import { useGeneration } from '../context/GenerationContext';
+
 const Gallery = () => {
-    // State for gallery images and loading status
+    // State for gallery images
     const [images, setImages] = React.useState([]);
-    const [isGenerating, setIsGenerating] = React.useState(false);
-    const [loadingWord, setLoadingWord] = React.useState("Loading");
-    const [dots, setDots] = React.useState("");
+    // Global generation state
+    const { isGenerating, loadingWord, dots, previewUrl } = useGeneration();
+    const [selectedImage, setSelectedImage] = React.useState(null); // Preview State
+
     const { triggerPhotoAction, PhotoInputs } = usePhotoAction();
 
-    // Effect to cycle words and animate dots
+    // Gallery 2.0: Infinite Scroll State
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGallery();
+
+    // Sync React Query data to local state for display (preserving curr design)
     React.useEffect(() => {
-        if (!isGenerating) return;
-
-        // 1. Pick random word initially and cycle every 3s
-        const phrases = headerData.loadingPhrases || ["Loading"];
-        // Pick random start
-        let wordIndex = Math.floor(Math.random() * phrases.length);
-        setLoadingWord(phrases[wordIndex]);
-
-        const wordInterval = setInterval(() => {
-            wordIndex = (wordIndex + 1) % phrases.length;
-            setLoadingWord(phrases[wordIndex]);
-        }, 3000);
-
-        // 2. Animate dots every 500ms
-        let dotCount = 0;
-        const dotInterval = setInterval(() => {
-            dotCount = (dotCount + 1) % 4; // 0, 1, 2, 3
-            setDots(".".repeat(dotCount));
-        }, 500);
-
-        return () => {
-            clearInterval(wordInterval);
-            clearInterval(dotInterval);
-        };
-    }, [isGenerating]);
+        if (data) {
+            const allImages = data.pages.flatMap(page => page.items);
+            if (allImages.length > 0) {
+                setImages(prev => {
+                    // Dedup: Prefer API items over local optimistics if needed, or simple merge
+                    const existingIds = new Set(prev.map(img => img.id));
+                    const newItems = allImages.filter(h => !existingIds.has(h.id));
+                    // Append new items from history to the END, or prepend? 
+                    // History comes newest first. 
+                    // Local state 'images' might have a just-generated image at [0].
+                    // To be safe: Rebuild list from history + any local pending?
+                    // Simplest: Just use history. 
+                    // BUT, handleGenerate adds to prev.
+                    // Better: Let history take over, but if we just generated, it might be in history already if we invalidated query.
+                    // For now: Merging logic.
+                    // Ensure backend items are sorted visually if needed, but array order from backend is usually correct
+                    return [...newItems, ...prev].sort((a, b) => b.created_at?.localeCompare(a.created_at) || 0);
+                });
+            }
+        }
+    }, [data]);
 
     // Helper to scroll to styles
     const scrollToStyles = () => {
@@ -48,38 +53,9 @@ const Gallery = () => {
         if (stylesSection) stylesSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
 
+    // NOTE: Old handleGenerate logic removed/deprecated in favor of TopStyles flow.
     const handleGenerate = async () => {
-        if (!headerData.specialPrompt) {
-            // Fallback to scrolling if no special prompt
-            scrollToStyles();
-            return;
-        }
-
-        console.log("Triggering generation with special prompt:", headerData.specialPrompt);
-
-        // Use View Transition API if available for smooth layout morph
-        if (document.startViewTransition) {
-            document.startViewTransition(() => setIsGenerating(true));
-        } else {
-            setIsGenerating(true);
-        }
-
-        try {
-            const data = await generateImage(headerData.specialPrompt, 'style-1');
-            console.log("Generation request sent successfully", data);
-
-            if (data.image_url) {
-                // Add the new image to the start of the list
-                setImages(prev => [{
-                    id: Date.now(),
-                    src: data.image_url
-                }, ...prev]);
-            }
-        } catch (error) {
-            console.error("Failed to generate image:", error);
-        } finally {
-            setIsGenerating(false);
-        }
+        scrollToStyles();
     };
 
     return (
@@ -87,12 +63,27 @@ const Gallery = () => {
             <PhotoInputs />
             <div className="section-header">My images</div>
 
-            {images.length > 0 || isGenerating ? (
+            {(isLoading || images.length > 0 || isGenerating) ? (
                 <div className="gallery-grid">
-                    {/* Loading Placeholder */}
+                    {/* Loading Placeholder for Generation */}
                     {isGenerating && (
                         <div className="gallery-item loading-placeholder animate-enter">
-                            <div className="loading-blur">
+                            {/* Preview Background */}
+                            {previewUrl && (
+                                <img
+                                    src={previewUrl}
+                                    alt="Preview"
+                                    style={{
+                                        position: 'absolute',
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                        filter: 'blur(4px) brightness(0.7)'
+                                    }}
+                                />
+                            )}
+
+                            <div className="loading-blur" style={previewUrl ? { backdropFilter: 'none', background: 'transparent' } : {}}>
                                 <Lollipop size={48} color="#ffffff" className="lollipop-spinner" />
                                 <div className="loading-text-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <span className="loading-text">{loadingWord}</span>
@@ -104,12 +95,44 @@ const Gallery = () => {
                         </div>
                     )}
 
+                    {/* Initial Loading State for Gallery (Skeleton-like or just Spinner) */}
+                    {isLoading && !isGenerating && (
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <div key={`skeleton-${i}`} className="gallery-item loading-placeholder" style={{ opacity: 0.5 }}>
+                                <div className="loading-blur" />
+                            </div>
+                        ))
+                    )}
+
                     {/* Render Images */}
-                    {images.map((img) => (
-                        <div key={img.id} className="gallery-item" onClick={() => triggerPhotoAction('Gallery Image')}>
-                            <img src={img.src} alt={`Gallery ${img.id}`} />
+                    {images.map((img, index) => (
+                        <div key={img.id} className="gallery-item" onClick={() => setSelectedImage(img)}>
+                            {index === 0 && previewUrl ? (
+                                <ManifestingImage
+                                    src={img.src}
+                                    previewUrl={previewUrl}
+                                    alt={`Gallery ${img.id}`}
+                                    className="manifest-img"
+                                />
+                            ) : (
+                                <img src={img.src} alt={`Gallery ${img.id}`} loading="lazy" />
+                            )}
                         </div>
                     ))}
+
+                    {/* Load More Button (Infinite Scroll Trigger) */}
+                    {hasNextPage && (
+                        <div className="gallery-load-more" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px' }}>
+                            <button
+                                onClick={() => fetchNextPage()}
+                                disabled={isFetchingNextPage}
+                                className="cta-button"
+                                style={{ fontSize: '14px', padding: '8px 16px' }}
+                            >
+                                {isFetchingNextPage ? 'Loading more...' : 'Load More'}
+                            </button>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="gallery-empty-state">
@@ -123,6 +146,12 @@ const Gallery = () => {
                     </button>
                 </div>
             )}
+
+            {/* Preview Modal */}
+            <PreviewModal
+                image={selectedImage}
+                onClose={() => setSelectedImage(null)}
+            />
         </div>
     );
 };

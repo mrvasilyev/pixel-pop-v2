@@ -60,14 +60,20 @@ def create_jwt_token(user_id: int, secret: str) -> str:
     return jwt.encode(payload, secret, algorithm="HS256")
 
 def verify_jwt_token(authorization: str = Header(...), secret: str = os.getenv("JWT_SECRET", "default-secret")) -> int:
+    print(f"🔒 Raw Auth Header: {authorization}")
     if not authorization.startswith("Bearer "):
+        print("❌ Invalid Auth Header Format")
         raise HTTPException(status_code=401, detail="Invalid auth header")
     
     token = authorization.split(" ")[1]
+    print(f"🔒 Verifying Token: {token[:10]}...")
     try:
         payload = jwt.decode(token, secret, algorithms=["HS256"])
+        print(f"✅ Token Valid for User: {payload['sub']}")
         return int(payload["sub"])
     except jwt.ExpiredSignatureError:
+        print("❌ Token Expired")
         raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        print(f"❌ Invalid Token: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")

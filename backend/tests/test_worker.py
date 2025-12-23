@@ -22,7 +22,11 @@ async def test_worker_flow_success():
          patch("worker.s3_client") as mock_s3:
         
         # Setup mocks
-        mock_gen.return_value = "https://openai.com/image.png"
+        mock_response_obj = MagicMock()
+        mock_response_obj.url = "https://openai.com/image.png"
+        mock_response_obj.b64_json = None
+        mock_gen.return_value = mock_response_obj
+        
         mock_http.return_value.content = b"fake-image-data"
         
         # Run worker process one job

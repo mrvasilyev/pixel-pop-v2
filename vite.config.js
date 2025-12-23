@@ -85,16 +85,13 @@ export default defineConfig({
     strictPort: true,
     host: true,
     proxy: {
-      '/api/generation': {
-        target: 'http://localhost:8000',
+
+      '/api': {
+        target: 'https://pixelpop-test.up.railway.app',
         changeOrigin: true,
         secure: false,
+        // rewrite: (path) => path.replace(/^\/api/, ''), 
       },
-      '/api/auth': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-      }
     }
   },
   test: {

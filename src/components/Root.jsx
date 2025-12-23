@@ -367,6 +367,12 @@ function AppInitializer() {
     );
 }
 
+import { GenerationProvider } from '../context/GenerationContext';
+
 export default function Root() {
-    return <AppInitializer />;
+    return (
+        <GenerationProvider>
+            <AppInitializer />
+        </GenerationProvider>
+    );
 }

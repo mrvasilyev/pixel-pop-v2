@@ -21,16 +21,22 @@ function MainScreen() {
   );
 }
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {(import.meta.env.VITE_ENABLE_CMS === 'true' || import.meta.env.DEV) && (
-          <Route path="/keystatic/*" element={<Admin />} />
-        )}
-        <Route path="/" element={<MainScreen />} />
-      </Routes>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          {(import.meta.env.VITE_ENABLE_CMS === 'true' || import.meta.env.DEV) && (
+            <Route path="/keystatic/*" element={<Admin />} />
+          )}
+          <Route path="/" element={<MainScreen />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
