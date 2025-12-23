@@ -52,6 +52,7 @@ const Gallery = () => {
                 created_at: new Date().toISOString()
             };
             setImages(prev => [newImage, ...prev]);
+            localStorage.setItem('user_has_photos', 'true');
 
         } catch (err) {
             console.error("Generation failed:", err);
@@ -68,29 +69,33 @@ const Gallery = () => {
     // Gallery 2.0: Infinite Scroll State
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGallery();
 
-    // Sync React Query data to local state for display (preserving curr design)
+    // Sync React Query data to local state AND update localStorage cache
     React.useEffect(() => {
         if (data) {
             const allImages = data.pages.flatMap(page => page.items);
             if (allImages.length > 0) {
+                localStorage.setItem('user_has_photos', 'true');
                 setImages(prev => {
-                    // Dedup: Prefer API items over local optimistics if needed, or simple merge
                     const existingIds = new Set(prev.map(img => img.id));
                     const newItems = allImages.filter(h => !existingIds.has(h.id));
-                    // Append new items from history to the END, or prepend? 
-                    // History comes newest first. 
-                    // Local state 'images' might have a just-generated image at [0].
-                    // To be safe: Rebuild list from history + any local pending?
-                    // Simplest: Just use history. 
-                    // BUT, handleGenerate adds to prev.
-                    // Better: Let history take over, but if we just generated, it might be in history already if we invalidated query.
-                    // For now: Merging logic.
-                    // Ensure backend items are sorted visually if needed, but array order from backend is usually correct
                     return [...newItems, ...prev].sort((a, b) => b.created_at?.localeCompare(a.created_at) || 0);
                 });
+            } else {
+                // Only set to false if we have fetched and confirmed 0 items and no local generation is happening
+                if (!isGenerating && images.length === 0) {
+                    localStorage.setItem('user_has_photos', 'false');
+                }
             }
         }
-    }, [data]);
+    }, [data, isGenerating, images.length]);
+
+    // Fast Check: Use localStorage to determine if we should show skeleton
+    // Default to false (Empty State) if not set, to satisfy "no skeleton for empty users" request
+    const cachedHasPhotos = React.useMemo(() => localStorage.getItem('user_has_photos') === 'true', []);
+
+    // Show loading IF: We are generating OR (We are loading AND we think user has photos)
+    // If We are loading but think user has NO photos -> fall through to Empty State
+    const showLoading = isGenerating || (isLoading && cachedHasPhotos);
 
     // Helper to scroll to styles
     const scrollToStyles = () => {
@@ -111,7 +116,7 @@ const Gallery = () => {
             <PhotoInputs />
             <div className="section-header">My images</div>
 
-            {(isLoading || images.length > 0 || isGenerating) ? (
+            {(showLoading || images.length > 0) ? (
                 <div className="gallery-grid">
                     {/* Loading Placeholder for Generation */}
                     {isGenerating && (
