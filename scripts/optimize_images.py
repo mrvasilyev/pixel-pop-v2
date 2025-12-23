@@ -8,11 +8,13 @@ from PIL import Image
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../frontend'))
 IMAGES_DIRS = [
     os.path.join(FRONTEND_DIR, 'public/images/discover'),
-    os.path.join(FRONTEND_DIR, 'public/images/styles')
+    os.path.join(FRONTEND_DIR, 'public/images/styles'),
+    os.path.join(FRONTEND_DIR, 'public/images/background')
 ]
 CONTENT_DIRS = [
     os.path.join(FRONTEND_DIR, 'src/content/discover'),
-    os.path.join(FRONTEND_DIR, 'src/content/styles')
+    os.path.join(FRONTEND_DIR, 'src/content/styles'),
+    os.path.join(FRONTEND_DIR, 'src/content/header')
 ]
 
 MAX_WIDTH = 800
@@ -23,7 +25,7 @@ def optimize_image(image_path):
     Returns the new file path if successful, None otherwise.
     """
     try:
-        if image_path.endswith('.webp'):
+        if image_path.lower().endswith('.webp'):
             return None # Already webp
         
         filename = os.path.basename(image_path)
@@ -62,6 +64,9 @@ def update_json_references(old_filename, new_filename):
     new_base = os.path.basename(new_filename)
     
     for content_dir in CONTENT_DIRS:
+        if not os.path.exists(content_dir):
+            continue
+            
         for json_file in glob.glob(os.path.join(content_dir, '*.json')):
             try:
                 with open(json_file, 'r') as f:
@@ -73,12 +78,18 @@ def update_json_references(old_filename, new_filename):
                     # A more robust way: load json, check 'cover' field.
                     
                     data = json.loads(content)
-                    if 'cover' in data and data['cover'].endswith(old_base):
-                         # It matches exact filename at end of path
-                         data['cover'] = data['cover'].replace(old_base, new_base)
+                    
+                    # Check fields that might contain images. 'cover', 'background', 'logo'
+                    updated = False
+                    for key in ['cover', 'background', 'logo']:
+                         if key in data and isinstance(data[key], str) and data[key].endswith(old_base):
+                             data[key] = data[key].replace(old_base, new_base)
+                             updated = True
+                    
+                    if updated:
                          # write back
                          with open(json_file, 'w') as f:
-                             json.dump(data, f, indent=4) # Keystatic usually defaults but indent 4 is safe
+                             json.dump(data, f, indent=4) 
                     
             except Exception as e:
                 print(f"Error updating JSON {json_file}: {e}")
@@ -94,7 +105,7 @@ def main():
             continue
             
         # Find all png/jpg images recursively
-        types = ('**/*.png', '**/*.jpg', '**/*.jpeg')
+        types = ('**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.PNG', '**/*.JPG', '**/*.JPEG')
         files = []
         for t in types:
             files.extend(glob.glob(os.path.join(img_dir, t), recursive=True))

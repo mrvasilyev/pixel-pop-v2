@@ -1,6 +1,6 @@
 {
   "logo": "/logo.png",
-  "background": "/images/background/background.png",
+  "background": "/images/background/background.webp",
   "ctaButtonText": "Try a 80's style",
   "specialPrompt": "Transport the person into a 1980s studio portrait. Style with 80s hairstyle and fashion. Use a classic 80s studio background (lasers or mottled blue) that fills the entire frame. Do not add text.",
   "loadingPhrases": [
