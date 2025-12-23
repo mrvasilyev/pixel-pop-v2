@@ -1,8 +1,8 @@
 {
-  "title": "Restore an old photo",
-  "cover": "/images/discover/restore-an-old-photo.png",
-  "prompt": "",
-  "order": 7,
-  "content": {},
-  "hasPrompt": false
+    "title": "Restore an old photo",
+    "cover": "/images/discover/restore-an-old-photo.webp",
+    "prompt": "",
+    "order": 7,
+    "content": {},
+    "hasPrompt": false
 }

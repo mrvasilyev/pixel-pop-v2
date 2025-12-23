@@ -1,8 +1,8 @@
 {
-  "title": "Create a holiday card",
-  "cover": "/images/discover/create-a-holiday-card.png",
-  "prompt": "Transform the reference photo into a warm, elegant holiday card with festive styling, cozy lighting, subtle décor, and natural, photorealistic likeness preserved. Optionally include tasteful holiday text or a short seasonal greeting that complements the image without overpowering the subject.",
-  "order": 1,
-  "hasPrompt": true,
-  "content": {}
+    "title": "Create a holiday card",
+    "cover": "/images/discover/create-a-holiday-card.webp",
+    "prompt": "Transform the reference photo into a warm, elegant holiday card with festive styling, cozy lighting, subtle d\u00e9cor, and natural, photorealistic likeness preserved. Optionally include tasteful holiday text or a short seasonal greeting that complements the image without overpowering the subject.",
+    "order": 1,
+    "hasPrompt": true,
+    "content": {}
 }

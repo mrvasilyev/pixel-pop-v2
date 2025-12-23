@@ -1,7 +1,7 @@
 {
-  "title": "Fisheye",
-  "cover": "/images/styles/fisheye/cover.png",
-  "prompt": "A high-contrast, bright futuristic portrait photographed with a Hasselblad medium-format film camera using an extreme fisheye wide-angle lens and harsh on-camera flash. The space is constructed from glossy white floor panels that reflect light, and a gridded white ceiling emitting uniform illumination. The scene feels clinical, sci-fi, and minimalistic.",
-  "order": 13,
-  "hasPrompt": true
+    "title": "Fisheye",
+    "cover": "/images/styles/fisheye/cover.webp",
+    "prompt": "A high-contrast, bright futuristic portrait photographed with a Hasselblad medium-format film camera using an extreme fisheye wide-angle lens and harsh on-camera flash. The space is constructed from glossy white floor panels that reflect light, and a gridded white ceiling emitting uniform illumination. The scene feels clinical, sci-fi, and minimalistic.",
+    "order": 13,
+    "hasPrompt": true
 }

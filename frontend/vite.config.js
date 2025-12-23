@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path';
 import { makeGenericAPIRouteHandler } from '@keystatic/core/api/generic';
 import config from './keystatic.config';
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 
 // Helper to read request body
 const readBody = (req) => {
@@ -96,7 +97,16 @@ const keystaticMiddleware = () => {
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), keystaticMiddleware()],
+  plugins: [
+    react(), 
+    keystaticMiddleware(),
+    ViteImageOptimizer({
+      png: { quality: 80 },
+      jpeg: { quality: 75 },
+      webp: { quality: 80 },
+      avif: { quality: 70 },
+    }),
+  ],
   server: {
     port: 5174,
     strictPort: true,

@@ -1,7 +1,7 @@
 {
-  "title": "Art School",
-  "cover": "/images/styles/art-school/cover.png",
-  "prompt": "Using the provided image as reference, create a soft, understated image with an art-school aesthetic. If people are present, preserve their identity while using gentle natural light, muted colors, and a relaxed, slightly awkward pose and place them in a simple, everyday setting such as a studio, classroom, or quiet street. Otherwise, treat the scene or object as the subject or subjects, using gentle light, muted colors, and intimate framing.The mood should feel intimate, youthful, and casually artistic rather than polished or glamorous.",
-  "order": 14,
-  "hasPrompt": true
+    "title": "Art School",
+    "cover": "/images/styles/art-school/cover.webp",
+    "prompt": "Using the provided image as reference, create a soft, understated image with an art-school aesthetic. If people are present, preserve their identity while using gentle natural light, muted colors, and a relaxed, slightly awkward pose and place them in a simple, everyday setting such as a studio, classroom, or quiet street. Otherwise, treat the scene or object as the subject or subjects, using gentle light, muted colors, and intimate framing.The mood should feel intimate, youthful, and casually artistic rather than polished or glamorous.",
+    "order": 14,
+    "hasPrompt": true
 }

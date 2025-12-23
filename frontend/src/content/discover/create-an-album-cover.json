@@ -1,8 +1,8 @@
 {
-  "title": "Create an album cover",
-  "cover": "/images/discover/create-an-album-cover.png",
-  "prompt": "",
-  "order": 6,
-  "content": {},
-  "hasPrompt": false
+    "title": "Create an album cover",
+    "cover": "/images/discover/create-an-album-cover.webp",
+    "prompt": "",
+    "order": 6,
+    "content": {},
+    "hasPrompt": false
 }

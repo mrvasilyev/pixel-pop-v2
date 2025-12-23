@@ -1,8 +1,8 @@
 {
-  "title": "Create a coloring page",
-  "cover": "/images/discover/create-a-coloring-page.jpg",
-  "prompt": "",
-  "order": 2,
-  "content": {},
-  "hasPrompt": false
+    "title": "Create a coloring page",
+    "cover": "/images/discover/create-a-coloring-page.webp",
+    "prompt": "",
+    "order": 2,
+    "content": {},
+    "hasPrompt": false
 }

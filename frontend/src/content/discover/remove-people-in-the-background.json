@@ -1,8 +1,8 @@
 {
-  "title": "Remove people in the background",
-  "cover": "/images/discover/remove-people-in-the-background.png",
-  "prompt": "",
-  "order": 8,
-  "content": {},
-  "hasPrompt": false
+    "title": "Remove people in the background",
+    "cover": "/images/discover/remove-people-in-the-background.webp",
+    "prompt": "",
+    "order": 8,
+    "content": {},
+    "hasPrompt": false
 }

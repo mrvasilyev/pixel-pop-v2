@@ -11,38 +11,9 @@ export const usePhotoAction = (options = {}) => {
     const cameraInputRef = useRef(null);
 
     const triggerPhotoAction = useCallback((title) => {
-        const webApp = window.Telegram?.WebApp;
-
-        const fallback = () => {
-            console.warn('Telegram WebApp not detected or showPopup not supported, using fallback confirm');
-            // Fallback: Directly open the file picker (which usually offers Camera option on mobile)
-            fileInputRef.current?.click();
-        };
-
-        if (webApp && webApp.showPopup && typeof webApp.isVersionAtLeast === 'function' && webApp.isVersionAtLeast('6.2')) {
-            try {
-                webApp.showPopup({
-                    title: title || 'Choose Action',
-                    message: 'Choose a photo to get started.',
-                    buttons: [
-                        { id: 'gallery', type: 'default', text: 'Choose a photo' },
-                        { id: 'camera', type: 'default', text: 'Take a selfie' },
-                        { id: 'cancel', type: 'cancel' }
-                    ]
-                }, (buttonId) => {
-                    if (buttonId === 'gallery') {
-                        fileInputRef.current?.click();
-                    } else if (buttonId === 'camera') {
-                        cameraInputRef.current?.click();
-                    }
-                });
-            } catch (e) {
-                console.error("WebApp.showPopup failed:", e);
-                fallback();
-            }
-        } else {
-            fallback();
-        }
+        // Direct action: Open the native file picker
+        // This usually offers "Photo Library", "Take Photo", and "Choose File" on mobile natively
+        fileInputRef.current?.click();
     }, []);
 
     const handleFileChange = (e) => {

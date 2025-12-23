@@ -71,7 +71,13 @@ const DiscoverStyles = () => {
             <div className="discover-grid-container">
                 {discoverItems.map((item, i) => (
                     <div key={i} className="discover-card" onClick={() => handleItemClick(item)}>
-                        <img className="discover-img" src={`${import.meta.env.BASE_URL}${item.cover?.replace(/^\//, '')}` || 'https://placehold.co/48x48'} alt="icon" />
+                        <img
+                            className="discover-img"
+                            src={`${import.meta.env.BASE_URL}${item.cover?.replace(/^\//, '')}` || 'https://placehold.co/48x48'}
+                            alt={item.title || "Style preview"}
+                            loading="lazy"
+                            decoding="async"
+                        />
                         <div className="discover-text">{item.title}</div>
                     </div>
                 ))}

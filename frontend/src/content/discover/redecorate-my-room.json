@@ -1,8 +1,8 @@
 {
-  "title": "Redecorate my room",
-  "cover": "/images/discover/redecorate-my-room.png",
-  "prompt": "",
-  "order": 10,
-  "content": {},
-  "hasPrompt": false
+    "title": "Redecorate my room",
+    "cover": "/images/discover/redecorate-my-room.webp",
+    "prompt": "",
+    "order": 10,
+    "content": {},
+    "hasPrompt": false
 }
