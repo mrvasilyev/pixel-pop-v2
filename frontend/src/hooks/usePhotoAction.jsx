@@ -1,20 +1,30 @@
-import { useCallback, useRef } from 'react';
+import ActionSheet from '../components/ActionSheet';
+import React, { useState, useRef, useCallback } from 'react';
 
 /**
- * Hook to handle photo selection via Native/Telegram UI
+ * Hook to handle photo selection via Custom Telegram-style Action Sheet (2025 UI)
  * Returns:
- * - triggerPhotoAction(title): Function to open the dialog
- * - PhotoInputs: Component to render hidden inputs (must be rendered in the parent)
+ * - triggerPhotoAction(title): Function to open the Action Sheet
+ * - PhotoInputs: Component to render hidden inputs AND the Action Sheet (must be rendered in the parent)
  */
 export const usePhotoAction = (options = {}) => {
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [sheetTitle, setSheetTitle] = useState('');
 
     const triggerPhotoAction = useCallback((title) => {
-        // Direct action: Open the native file picker
-        // This usually offers "Photo Library", "Take Photo", and "Choose File" on mobile natively
-        fileInputRef.current?.click();
+        setSheetTitle(title || 'Choose a photo to get started');
+        setIsSheetOpen(true);
     }, []);
+
+    const handleAction = (actionId) => {
+        if (actionId === 'gallery') {
+            fileInputRef.current?.click();
+        } else if (actionId === 'camera') {
+            cameraInputRef.current?.click();
+        }
+    };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -44,6 +54,12 @@ export const usePhotoAction = (options = {}) => {
                 capture="user"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
+            />
+            <ActionSheet
+                isOpen={isSheetOpen}
+                onClose={() => setIsSheetOpen(false)}
+                onAction={handleAction}
+                title={sheetTitle}
             />
         </>
     );
