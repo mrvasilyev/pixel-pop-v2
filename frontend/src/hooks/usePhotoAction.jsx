@@ -14,7 +14,12 @@ export const usePhotoAction = (options = {}) => {
     const [sheetTitle, setSheetTitle] = useState('');
 
     const triggerPhotoAction = useCallback((title) => {
-        setSheetTitle(title || 'Choose a photo to get started');
+        // Support simple string or object { title, subtitle }
+        const config = typeof title === 'object' ? title : {
+            title: title || 'Choose Action',
+            subtitle: 'Choose a photo to get started'
+        };
+        setSheetTitle(config);
         setIsSheetOpen(true);
     }, []);
 
@@ -43,7 +48,8 @@ export const usePhotoAction = (options = {}) => {
             <input
                 type="file"
                 ref={fileInputRef}
-                accept="image/*"
+                // Try specific types to encourage library on some Androids/iOS versions, though iOS menu is persistent
+                accept="image/png, image/jpeg, image/heic, image/webp"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
             />

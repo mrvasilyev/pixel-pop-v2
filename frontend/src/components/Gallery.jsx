@@ -100,7 +100,10 @@ const Gallery = () => {
 
     // Updated CTA Handler
     const handleGenerate = async () => {
-        triggerPhotoAction(headerData.ctaButtonText || "Try a Style");
+        triggerPhotoAction({
+            title: headerData.ctaButtonText || "Try a Style",
+            subtitle: "Choose a photo to get started"
+        });
     };
 
     return (

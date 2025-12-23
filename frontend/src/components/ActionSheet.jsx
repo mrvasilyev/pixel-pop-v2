@@ -45,17 +45,33 @@ const ActionSheet = ({ isOpen, onClose, onAction, title }) => {
                 {/* Main Actions Group */}
                 <div className="action-group">
                     {/* Header/Title if needed (optional, like iOS top text) */}
-                    {title && (
+                    {/* Header/Title */}
+                    <div style={{
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        alignItems: 'center',
+                        borderBottom: '0.5px solid rgba(255,255,255,0.1)'
+                    }}>
                         <div style={{
-                            padding: '12px',
                             fontSize: '13px',
+                            fontWeight: '600',
                             color: '#888',
                             textAlign: 'center',
-                            borderBottom: '0.5px solid rgba(255,255,255,0.1)'
                         }}>
-                            {title}
+                            {title.title || title}
                         </div>
-                    )}
+                        {title.subtitle && (
+                            <div style={{
+                                fontSize: '11px',
+                                color: '#666',
+                                textAlign: 'center',
+                            }}>
+                                {title.subtitle}
+                            </div>
+                        )}
+                    </div>
 
                     <button className="action-button" onClick={() => handleAction('gallery')}>
                         Choose a photo

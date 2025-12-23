@@ -61,7 +61,10 @@ const DiscoverStyles = () => {
 
     const handleItemClick = (item) => {
         pendingItemRef.current = item;
-        triggerPhotoAction(item.title);
+        triggerPhotoAction({
+            title: item.title,
+            subtitle: "Choose a photo to get started"
+        });
     };
 
     return (
