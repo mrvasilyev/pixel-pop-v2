@@ -428,6 +428,7 @@ body {
     justify-content: center;
     box-shadow: 0 0 20px rgba(255, 1, 255, 0.5);
     font-family: inherit;
+    margin-bottom: 24px;
 }
 
 .lollipop-spinner {
