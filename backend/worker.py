@@ -159,9 +159,9 @@ async def process_job(job_manager: JobManager, job: dict):
             
             # Font Settings
             text = "Generated with PIXEL POP • @pixel_pop_bot"
-            font_size = 20 # Slightly larger for visibility
+            font_size = 24 # Increased from 20 for visibility (V1 style)
             font = ImageFont.load_default() # Fallback
-            
+
             # Try to load a nicer font if available (common linux paths)
             possible_fonts = [
                 "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
@@ -175,17 +175,23 @@ async def process_job(job_manager: JobManager, job: dict):
                     font_path = p
                     break
             
-            # Fallback: Download Roboto to /tmp if not found locally
+            # Fallback: Download Roboto to local dir if not found locally
             if not font_path:
                 try:
-                    font_url = "https://github.com/google/fonts/raw/main/apache/roboto/Roboto-Regular.ttf"
-                    temp_font_path = "/tmp/Roboto-Regular.ttf"
-                    if not os.path.exists(temp_font_path):
+                    # Use raw.githubusercontent correct repo
+                    font_url = "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf"
+                    temp_font_path = "Roboto-Regular.ttf" # Save in CWD
+                    
+                    if not os.path.exists(temp_font_path) or os.path.getsize(temp_font_path) < 1000:
                         print(f"⬇️ Downloading Font from {font_url}...")
                         import requests
-                        r = requests.get(font_url)
+                        # Add headers to avoid bot blocking
+                        r = requests.get(font_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
+                        r.raise_for_status()
                         with open(temp_font_path, "wb") as f:
                             f.write(r.content)
+                        print(f"✅ Font downloaded: {os.path.getsize(temp_font_path)} bytes")
+                    
                     font_path = temp_font_path
                 except Exception as dl_err:
                     print(f"⚠️ Font Download Failed: {dl_err}")
@@ -193,8 +199,10 @@ async def process_job(job_manager: JobManager, job: dict):
             if font_path:
                 try:
                     font = ImageFont.truetype(font_path, font_size)
-                except:
-                    print("⚠️ Failed to load TrueType font, using default")
+                    print(f"✅ Loaded Font: {font_path}")
+                except Exception as font_err:
+                    print(f"⚠️ Failed to load TrueType font ({font_path}): {font_err}")
+                    print("⚠️ Falling back to default font (bitmap)")
             
             # Rotate Text: Create temporary image for text to rotate it
             # Text size
@@ -202,18 +210,22 @@ async def process_job(job_manager: JobManager, job: dict):
             text_w = bbox[2] - bbox[0]
             text_h = bbox[3] - bbox[1]
             
-            # Create separate image for text
-            text_img = Image.new('RGBA', (text_w, text_h), (255, 255, 255, 0))
+            # Create separate image for text with GENEROUS padding to prevent any clipping
+            safe_padding = 20 # 10px on each side
+            text_img = Image.new('RGBA', (text_w + safe_padding, text_h + safe_padding), (255, 255, 255, 0)) 
             text_draw = ImageDraw.Draw(text_img)
-            text_draw.text((0, 0), text, font=font, fill=(255, 255, 255, 230)) # 90% opacity white
             
-            # Rotate 90 degrees counter-clockwise (vertical up) -> V1 said -PI/2 which is 270deg (vertical up)
-            # Actually V1 code: ctx.rotate(-Math.PI / 2); means counter-clockwise 90 deg. 
-            # Text starts at bottom-right and goes UP.
-            rotated_text = text_img.rotate(90, expand=True) # 90 degrees CCW
+            # V1 Style: No stroke, 90% opacity white, Bullet point restored
+            # Use offset with padding to ensure no clipping
+            draw_x = (safe_padding // 2) - bbox[0]
+            draw_y = (safe_padding // 2) - bbox[1]
+            text_draw.text((draw_x, draw_y), text, font=font, fill=(255, 255, 255, 230)) 
+            
+            # Rotate 90 degrees counter-clockwise
+            rotated_text = text_img.rotate(90, expand=True) 
             
             # Position: Right edge, bottom
-            padding_right = 10
+            padding_right = 20 
             padding_bottom = 40
             
             x = width - rotated_text.width - padding_right
@@ -229,7 +241,7 @@ async def process_job(job_manager: JobManager, job: dict):
             out_buffer = BytesIO()
             watermarked.convert("RGB").save(out_buffer, format="PNG")
             img_data = out_buffer.getvalue()
-            print("✅ Watermark Applied Successfully")
+            print("✅ Watermark Applied Successfully (Stroked)")
             
         except Exception as e:
             print(f"⚠️ Watermark Failed (Skipping): {e}")
@@ -263,7 +275,13 @@ async def process_job(job_manager: JobManager, job: dict):
         # Est. Output Tokens: High ~5312 ($0.17), Medium ~1250 ($0.04)
         input_tokens = len(job.get("prompt", "")) // 4
         quality = job.get("model_config", {}).get("quality", "standard")
-        output_tokens = 5312 if quality == "high" else 1250
+        
+        if quality == "high":
+            output_tokens = 5312 # ~$0.17
+        elif quality == "low":
+            output_tokens = 281 # ~$0.009 (Approved as 0.0xxx variant)
+        else:
+            output_tokens = 1250 # ~$0.04 (Standard)
         
         cost = ((input_tokens / 1_000_000) * 8.00) + ((output_tokens / 1_000_000) * 32.00)
         cost = round(cost, 6) # Precision

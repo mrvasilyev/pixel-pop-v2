@@ -43,7 +43,7 @@ export const generateImage = async (prompt, styleId, slug, extraConfig = {}) => 
         slug: slug, // Pass slug for DB tracking
         model_config: {
           model: 'gpt-image-1.5',
-          quality: 'high',
+          quality: 'standard', // Was 'high' ($0.17). 'standard' is ~$0.04. Use 'low' for ~$0.009.
           size: '1024x1024',
           style_id: styleId,
           ...extraConfig
