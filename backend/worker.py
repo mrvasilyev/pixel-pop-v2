@@ -1,6 +1,7 @@
 import os
 import time
 import json
+print(f"DEBUG ENV KEYS: {[k for k in os.environ.keys() if 'SUPA' in k or 'VITE' in k]}")
 import asyncio
 import boto3
 import requests
@@ -13,14 +14,16 @@ from supabase import create_client, Client
 
 # Initialize Services
 # Supabase
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("VITE_SUPABASE_KEY") or os.getenv("VITE_SUPABASE_ANON_KEY")
 supabase: Client = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     except Exception as e:
         print(f"⚠️ Failed to init Supabase: {e}")
+else:
+    print(f"⚠️ Supabase env vars missing! URL={SUPABASE_URL is not None}, KEY={SUPABASE_KEY is not None}")
 
 s3_client = boto3.client(
     's3',

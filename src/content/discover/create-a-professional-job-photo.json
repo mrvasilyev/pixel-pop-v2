@@ -1,7 +1,0 @@
-{
-  "title": "Create a professional job photo",
-  "cover": "/images/discover/create-a-professional-job-photo/cover.jpg",
-  "prompt": "Using the provided image of the subject as reference, create a clean, realistic studio portrait inspired by the visual conventions of new-graduate job-hunting photos. If a person is present, preserve the subject's facial features, proportions, and identity exactly as shown, without beautifying or altering their face. If not, if not, apply the same restrained studio lighting, neutral background, and formal framing to the object or scene. Present the subject in a centered, front-facing composition wearing conservative, entry-level business attire, with neat grooming and a neutral, polite expression. Use flat, even studio lighting that minimizes shadows and emphasizes clarity, paired with a plain light blue, pale gray, or white background. The framing should be tightly cropped, symmetrical, and formal, with a restrained, slightly earnest mood that reflects professionalism, sincerity, and readiness for a job.",
-  "order": 11,
-  "hasPrompt": true
-}

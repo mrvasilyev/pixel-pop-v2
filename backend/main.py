@@ -7,8 +7,14 @@ from auth import validate_telegram_data, create_jwt_token, verify_jwt_token
 from job_manager import JobManager
 
 # Load .env
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+# Load .env
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', '.env')
 load_dotenv(dotenv_path=dotenv_path)
+
+dotenv_local_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', '.env.local')
+if os.path.exists(dotenv_local_path):
+    print(f"Loading local env from {dotenv_local_path}")
+    load_dotenv(dotenv_path=dotenv_local_path, override=True)
 
 app = FastAPI()
 
@@ -225,9 +231,7 @@ async def get_gallery(
         print(f"❌ Gallery Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-    import uvicorn
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+
 
 @app.post("/api/upload")
 async def upload_file(
@@ -278,7 +282,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 # Check if dist exists (Production)
-dist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dist")
+dist_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
 if os.path.exists(dist_path):
     app.mount("/assets", StaticFiles(directory=os.path.join(dist_path, "assets")), name="assets")
     
@@ -297,3 +301,9 @@ if os.path.exists(dist_path):
         return FileResponse(os.path.join(dist_path, "index.html"))
 else:
     print("⚠️ 'dist' directory not found. Frontend will not be served (OK for local dev if using Vite server).")
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+

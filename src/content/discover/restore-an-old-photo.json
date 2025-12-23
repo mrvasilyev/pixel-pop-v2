@@ -1,7 +1,0 @@
-{
-  "title": "Restore an old photo",
-  "cover": "/images/discover/restore-an-old-photo/cover.png",
-  "prompt": "Restore and enhance this photo as if it were captured today with a high-end modern camera. Improve overall sharpness and fine detail without changing the subject's identity or features. Enhance colors to look natural and vibrant (not oversaturated), correct white balance, and gently increase contrast and dynamic range. Reduce noise, fix blur or softness, and refine edges for a crisp, realistic look. Preserve authentic skin tones and textures, avoiding any artificial smoothing or stylization. The final image should feel clean, high-resolution, and true to the original scene, just clearer and more lifelike.",
-  "order": 7,
-  "hasPrompt": true
-}
