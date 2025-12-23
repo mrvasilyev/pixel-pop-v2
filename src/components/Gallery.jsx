@@ -4,10 +4,43 @@ import { Sparkles, Lollipop } from 'lucide-react';
 import headerData from '../content/header.json';
 import { generateImage } from '../api/client';
 
+import { usePhotoAction } from '../hooks/usePhotoAction';
+
 const Gallery = () => {
     // State for gallery images and loading status
     const [images, setImages] = React.useState([]);
     const [isGenerating, setIsGenerating] = React.useState(false);
+    const [loadingWord, setLoadingWord] = React.useState("Loading");
+    const [dots, setDots] = React.useState("");
+    const { triggerPhotoAction, PhotoInputs } = usePhotoAction();
+
+    // Effect to cycle words and animate dots
+    React.useEffect(() => {
+        if (!isGenerating) return;
+
+        // 1. Pick random word initially and cycle every 3s
+        const phrases = headerData.loadingPhrases || ["Loading"];
+        // Pick random start
+        let wordIndex = Math.floor(Math.random() * phrases.length);
+        setLoadingWord(phrases[wordIndex]);
+
+        const wordInterval = setInterval(() => {
+            wordIndex = (wordIndex + 1) % phrases.length;
+            setLoadingWord(phrases[wordIndex]);
+        }, 3000);
+
+        // 2. Animate dots every 500ms
+        let dotCount = 0;
+        const dotInterval = setInterval(() => {
+            dotCount = (dotCount + 1) % 4; // 0, 1, 2, 3
+            setDots(".".repeat(dotCount));
+        }, 500);
+
+        return () => {
+            clearInterval(wordInterval);
+            clearInterval(dotInterval);
+        };
+    }, [isGenerating]);
 
     // Helper to scroll to styles
     const scrollToStyles = () => {
@@ -51,6 +84,7 @@ const Gallery = () => {
 
     return (
         <div className="section-container">
+            <PhotoInputs />
             <div className="section-header">My images</div>
 
             {images.length > 0 || isGenerating ? (
@@ -60,14 +94,19 @@ const Gallery = () => {
                         <div className="gallery-item loading-placeholder animate-enter">
                             <div className="loading-blur">
                                 <Lollipop size={48} color="#ffffff" className="lollipop-spinner" />
-                                <span className="loading-text">Developing photo...</span>
+                                <div className="loading-text-wrapper" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <span className="loading-text">{loadingWord}</span>
+                                    <span style={{ position: 'absolute', left: '100%', marginLeft: '2px', width: '24px', textAlign: 'left' }} className="loading-text">
+                                        {dots}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     {/* Render Images */}
                     {images.map((img) => (
-                        <div key={img.id} className="gallery-item">
+                        <div key={img.id} className="gallery-item" onClick={() => triggerPhotoAction('Gallery Image')}>
                             <img src={img.src} alt={`Gallery ${img.id}`} />
                         </div>
                     ))}

@@ -1,29 +1,95 @@
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Mock Telegram initData for dev if missing
+const getTelegramInitData = () => {
+  if (window.Telegram?.WebApp?.initData) {
+    return window.Telegram.WebApp.initData;
+  }
+  // Mock for Dev (matches dummy validation if token is missing/mocked)
+  return "query_id=mock&user=%7B%22id%22%3A51576055%2C%22first_name%22%3A%22Dev%22%7D&auth_date=1&hash=mock";
+};
+
+let accessToken = null;
+
+async function login() {
+  if (accessToken) return accessToken;
+  
+  const initData = getTelegramInitData();
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ initData })
+  });
+
+  if (!res.ok) throw new Error('Login failed');
+  const data = await res.json();
+  accessToken = data.access_token;
+  return accessToken;
+}
+
 export const generateImage = async (prompt, styleId) => {
   try {
-    const response = await fetch('/api/generation', {
+    const token = await login();
+    
+    // 1. Enqueue Job
+    const res = await fetch('/api/generation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
         prompt: prompt,
-        style_id: styleId,
         model_config: {
           model: 'gpt-image-1.5',
           quality: 'high',
-          size: '1024x1024'
+          size: '1024x1024',
+          style_id: styleId
         }
       })
     });
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    if (!res.ok) {
+      if (res.status === 401) {
+          accessToken = null; // Retry login next time
+          throw new Error("Unauthorized - Session Expired");
+      }
+      throw new Error(`Generation failed: ${await res.text()}`);
     }
 
-    const data = await response.json();
-    return data;
+    const { job_id } = await res.json();
+    console.log(`Job Enqueued: ${job_id}`);
+
+    // 2. Poll for Status
+    let attempts = 0;
+    while (attempts < 60) { // Timeout after 60s
+      attempts++;
+      await delay(1000); // Wait 1s
+      
+      const statusRes = await fetch(`/api/generation/${job_id}`, {
+         headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!statusRes.ok) continue;
+      
+      const job = await statusRes.json();
+      console.log(`Job Status: ${job.status}`);
+      
+      if (job.status === 'COMPLETED') {
+        // Return full structure as expected by Gallery
+        return { 
+            image_url: job.result.image_url, 
+            metadata: { model: 'gpt-image-1.5' }
+        };
+      }
+      if (job.status === 'FAILED') {
+        throw new Error(job.error || 'Job failed processing');
+      }
+    }
+    throw new Error("Generation timed out");
+
   } catch (error) {
-    console.error('Generation request failed:', error);
+    console.error('Error in generateImage:', error);
     throw error;
   }
 };

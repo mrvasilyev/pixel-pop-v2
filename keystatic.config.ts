@@ -26,6 +26,10 @@ export default config({
                     directory: 'public/images/header',
                     publicPath: '/images/header/',
                 }),
+                loadingPhrases: fields.array(fields.text({ label: 'Phrase' }), {
+                    label: 'Loading Phrases',
+                    itemLabel: props => props.value
+                }),
                 background: fields.image({
                     label: 'App Background',
                     directory: 'public/images/background',
