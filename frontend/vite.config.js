@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path';
+import { Buffer } from 'buffer';
 import { makeGenericAPIRouteHandler } from '@keystatic/core/api/generic';
 import config from './keystatic.config';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';

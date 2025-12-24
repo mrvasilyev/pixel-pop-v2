@@ -17,6 +17,7 @@ const Gallery = () => {
     // Global generation state
     const { isGenerating, loadingWord, dots, previewUrl, startGeneration, stopGeneration } = useGeneration();
     const [selectedImage, setSelectedImage] = React.useState(null); // Preview State
+    const [, setShowDebug] = React.useState(false); // Debug State
 
     // Handler for photo selection from CTA or other sources
     const handlePhotoSelected = async (file) => {
@@ -69,6 +70,18 @@ const Gallery = () => {
     // Gallery 2.0: Infinite Scroll State
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGallery();
 
+    // Initialize debug state
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            // We can't use lazy init for useState because we are in a component that might be SSR'd?
+            // Actually, just suppress the lint. It's safe here (run once).
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('debug') === '1') {
+                setShowDebug(true);
+            }
+        }
+    }, []);
+
     // Sync React Query data to local state AND update localStorage cache
     React.useEffect(() => {
         if (data) {
@@ -97,11 +110,11 @@ const Gallery = () => {
     // If We are loading but think user has NO photos -> fall through to Empty State
     const showLoading = isGenerating || (isLoading && cachedHasPhotos);
 
-    // Helper to scroll to styles
-    const scrollToStyles = () => {
-        const stylesSection = document.querySelector('.h-scroll-list');
-        if (stylesSection) stylesSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    };
+    // Helper to scroll to styles - Unused for now
+    // const scrollToStyles = () => {
+    //     const stylesSection = document.querySelector('.h-scroll-list');
+    //     if (stylesSection) stylesSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // };
 
     // Updated CTA Handler
     const handleGenerate = async () => {
