@@ -38,7 +38,7 @@ BUCKET_NAME = os.getenv("AWS_BUCKET_NAME", "pixelpop")
 
 openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-async def update_db_status(job_id, status, result_url=None, job_details=None, cost=None):
+async def update_db_status(job_id, status, result_url=None, job_details=None, cost=None, extra_stats=None):
     """
     Updates the generation status in Supabase.
     If job_details is provided, it attempts to UPSERT the full record (useful for initial creation).
@@ -62,10 +62,16 @@ async def update_db_status(job_id, status, result_url=None, job_details=None, co
             data["user_id"] = job_details.get("user_id")
             # Use 'slug' for the DB prompt column if available, else full prompt
             data["prompt"] = job_details.get("slug") or job_details.get("prompt")
+            # Save parameters (model_config)
+            if "model_config" in job_details:
+                data["parameters"] = json.dumps(job_details["model_config"])
             # created_at is automatic usually, or we can pass it
         
         if cost is not None:
             data["cost"] = cost
+            
+        if extra_stats:
+            data.update(extra_stats) # Merge input_tokens, output_tokens, etc.
             
         # Supabase-py is synchronous
         supabase.table("generations").upsert(data).execute()
@@ -90,16 +96,38 @@ async def generate_with_retry(prompt, model_config):
             # Download the image bytes
             img_response = requests.get(image_url)
             img_response.raise_for_status()
-            image_bytes = BytesIO(img_response.content)
-            image_bytes.name = "input_image.png" # Required by openai client
             
+            # Pre-process Image: Pad to target aspect ratio to avoid OpenAI cropping
+            from PIL import Image, ImageOps
+            
+            target_size_str = model_config.get("size", "1024x1024")
+            cw, ch = map(int, target_size_str.split('x'))
+            
+            # Load
+            input_pil = Image.open(BytesIO(img_response.content)).convert("RGBA")
+            
+            # Pad (Letterbox) to fit target size while maintaining aspect ratio
+            # color=(0,0,0,0) for transparent padding, or matching content?
+            # OpenAI requires PNG. Transparent padding might be interpreted.
+            # DALL-E 2/3 inpainting/edit supports transparency.
+            # But standard edit might expect opaque?
+            # Let's use ImageOps.pad which centers the image.
+            # We resize the input to FIT inside target, then pad.
+            padded_pil = ImageOps.pad(input_pil, (cw, ch), color=(0, 0, 0, 0))
+            
+            # Save to bytes
+            input_byte_arr = BytesIO()
+            padded_pil.save(input_byte_arr, format='PNG')
+            image_bytes = input_byte_arr
+            image_bytes.name = "input_image.png"
+
             print(f"🎨 Calling OpenAI Edit (gpt-image-1.5): {prompt[:30]}...")
             response = await openai_client.images.edit(
                 model="gpt-image-1.5",
                 image=image_bytes,
                 prompt=prompt,
                 n=1,
-                size="1024x1024",
+                size=target_size_str,
                 # output_format="png" # Optional, defaults to png usually
             )
         else:
@@ -109,7 +137,7 @@ async def generate_with_retry(prompt, model_config):
                 model="gpt-image-1.5",
                 prompt=prompt,
                 n=1,
-                size="1024x1024",
+                size=model_config.get("size", "1024x1024"),
                 quality=quality_param,
             )
             
@@ -272,27 +300,58 @@ async def process_job(job_manager: JobManager, job: dict):
             else:
                 public_url = image_url
 
-        # 4. Calculate Cost
-        # Pricing: Input $8.00/1M used, Output $32.00/1M used
-        # Est. Input Tokens: ~len(prompt)/4
-        # Est. Output Tokens: High ~5312 ($0.17), Medium ~1250 ($0.04)
-        input_tokens = len(job.get("prompt", "")) // 4
+        # 4. Calculate Tokens & Cost (DDD Pricing Logic)
+        input_tokens_est = len(job.get("prompt", "")) // 4
+        
         quality = job.get("model_config", {}).get("quality", "standard")
+        tier_map = {
+            "low": {"tokens": 281, "price_per_1m": 32.00},
+            "medium": {"tokens": 1250, "price_per_1m": 32.00}, # Standard
+            "high": {"tokens": 5312, "price_per_1m": 32.00}
+        }
+        # Determine strict tier for DB
+        model_tier = "medium"
+        if quality == "low": model_tier = "low"
+        if quality == "high": model_tier = "high"
         
-        if quality == "high":
-            output_tokens = 5312 # ~$0.17
-        elif quality == "low":
-            output_tokens = 281 # ~$0.009 (Approved as 0.0xxx variant)
-        else:
-            output_tokens = 1250 # ~$0.04 (Standard)
+        output_tokens_est = tier_map[model_tier]["tokens"]
         
-        cost = ((input_tokens / 1_000_000) * 8.00) + ((output_tokens / 1_000_000) * 32.00)
-        cost = round(cost, 6) # Precision
+        # Formula: (Input * 8 + Output * 32) / 1M
+        input_cost = (input_tokens_est / 1_000_000) * 8.00
+        output_cost = (output_tokens_est / 1_000_000) * 32.00
+        cost = round(input_cost + output_cost, 6)
         
-        # 5. Save Result
+        # 5. Record Transaction (Billing Domain)
+        # The Trigger will handle balance update
+        transaction_id = None
+        if supabase:
+            try:
+                tx_data = {
+                    "user_id": job.get("user_id"),
+                    "amount": -cost, # Negative for usage
+                    "credits_change": -1, # Deduct 1 credit (image) per generation
+                    "transaction_type": "GENERATION_USAGE",
+                    "description": f"Gen {model_tier.upper()}",
+                    "reference_id": job_id # Idempotency Key
+                }
+                tx_res = supabase.table("user_transactions").insert(tx_data).execute()
+                if tx_res.data:
+                    transaction_id = tx_res.data[0]["id"]
+            except Exception as e:
+                print(f"⚠️ Billing Transaction Failed: {e}")
+
+        # 6. Save Result (Generation Domain)
+        # Update job_details with new stats for update_db_status
+        extra_stats = {
+            "input_tokens": input_tokens_est,
+            "output_tokens": output_tokens_est,
+            "model_tier": model_tier,
+            "transaction_id": transaction_id
+        }
+        
         await job_manager.update_job(job_id, {"status": "COMPLETED", "result": {"image_url": public_url, "cost": cost}})
-        await update_db_status(job_id, "COMPLETED", public_url, cost=cost)
-        print(f"✅ Job {job_id} Completed (Cost: ${cost:.6f})")
+        await update_db_status(job_id, "COMPLETED", public_url, cost=cost, job_details=job, extra_stats=extra_stats)
+        print(f"✅ Job {job_id} Completed (Cost: ${cost:.6f}, Tier: {model_tier})")
 
     except Exception as e:
         print(f"❌ Job {job_id} Failed: {e}")

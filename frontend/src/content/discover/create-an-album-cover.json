@@ -1,8 +1,8 @@
 {
     "title": "Create an album cover",
-    "cover": "/images/discover/create-an-album-cover.webp",
-    "prompt": "",
+    "cover": "/images/discover/create-an-album-cover/cover.webp",
+    "prompt": "Artistic album cover art, surreal style, high resolution, moody atmosphere, creative composition, award winning design.",
     "order": 6,
     "content": {},
-    "hasPrompt": false
+    "hasPrompt": true
 }

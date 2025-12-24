@@ -1,4 +1,5 @@
-import ActionSheet from '../components/ActionSheet';
+import ActionSheet from '../components/ActionSheet.jsx';
+console.log('[Debug] ActionSheet Import:', ActionSheet);
 import React, { useState, useRef, useCallback } from 'react';
 
 /**
@@ -43,7 +44,7 @@ export const usePhotoAction = (options = {}) => {
         }
     };
 
-    const PhotoInputs = () => (
+    const actionSheetUI = (
         <>
             <input
                 type="file"
@@ -70,5 +71,5 @@ export const usePhotoAction = (options = {}) => {
         </>
     );
 
-    return { triggerPhotoAction, PhotoInputs };
+    return { triggerPhotoAction, actionSheetUI };
 };

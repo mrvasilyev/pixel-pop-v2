@@ -3,6 +3,7 @@ import './MainScreen.css';
 
 import { usePhotoAction } from '../hooks/usePhotoAction';
 import { useGeneration } from '../context/GenerationContext';
+import { useUser } from '../context/UserContext';
 import { generateImage, uploadImage } from '../api/client';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -17,10 +18,17 @@ const DiscoverStyles = () => {
     const pendingItemRef = React.useRef(null);
     const queryClient = useQueryClient();
     const { startGeneration, stopGeneration } = useGeneration();
+    const { user, openPaywall } = useUser();
 
     const handlePhotoSelected = async (file) => {
         const item = pendingItemRef.current;
         if (!item) return;
+
+        // CHECK CREDITS
+        if (!user || user.credits <= 0) {
+            openPaywall();
+            return;
+        }
 
         try {
             console.log("Processing discover item:", item.title);
@@ -57,9 +65,13 @@ const DiscoverStyles = () => {
         }
     };
 
-    const { triggerPhotoAction, PhotoInputs } = usePhotoAction({ onPhotoSelected: handlePhotoSelected });
+    const { triggerPhotoAction, actionSheetUI } = usePhotoAction({ onPhotoSelected: handlePhotoSelected });
 
     const handleItemClick = (item) => {
+        if (!user || user.credits <= 0) {
+            openPaywall();
+            return;
+        }
         pendingItemRef.current = item;
         triggerPhotoAction({
             title: item.title,
@@ -69,7 +81,7 @@ const DiscoverStyles = () => {
 
     return (
         <div className="section-container">
-            <PhotoInputs />
+            {actionSheetUI}
             <div className="section-header">Discover something new</div>
             <div className="discover-grid-container">
                 {discoverItems.map((item, i) => (

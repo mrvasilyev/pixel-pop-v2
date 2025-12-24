@@ -1,8 +1,8 @@
 {
     "title": "Create a professional product photo",
-    "cover": "/images/discover/create-a-professional-product-photo.webp",
-    "prompt": "",
+    "cover": "/images/discover/create-a-professional-product-photo/cover.webp",
+    "prompt": "Professional studio product photography, clean neutral background, soft commercial lighting, 8k resolution, advertisement quality.",
     "order": 12,
     "content": {},
-    "hasPrompt": false
+    "hasPrompt": true
 }

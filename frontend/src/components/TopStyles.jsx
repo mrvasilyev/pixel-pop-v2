@@ -3,6 +3,7 @@ import './MainScreen.css';
 
 import { usePhotoAction } from '../hooks/usePhotoAction';
 import { useGeneration } from '../context/GenerationContext';
+import { useUser } from '../context/UserContext';
 import { generateImage, uploadImage } from '../api/client';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -53,16 +54,21 @@ export default function TopStyles() {
         }
     };
 
-    const { triggerPhotoAction, PhotoInputs } = usePhotoAction({ onPhotoSelected: handlePhotoSelected });
+    const { triggerPhotoAction, actionSheetUI } = usePhotoAction({ onPhotoSelected: handlePhotoSelected });
+    const { user, openPaywall } = useUser();
 
     const handleStyleClick = (style) => {
+        if (!user || user.credits <= 0) {
+            openPaywall();
+            return;
+        }
         pendingStyleRef.current = style;
         triggerPhotoAction(style.title);
     };
 
     return (
         <div className="section-container">
-            <PhotoInputs />
+            {actionSheetUI}
             <div className="section-header">Try a style on an image</div>
             <div className="h-scroll-list">
                 {styles.map((style, i) => (

@@ -1,7 +1,7 @@
 {
     "title": "Remove people in the background",
-    "cover": "/images/discover/remove-people-in-the-background.webp",
-    "prompt": "",
+    "cover": "/images/discover/remove-people-in-the-background/cover.webp",
+    "prompt": "Photo with people in background removed, clean composition, natural looking background replacement.",
     "order": 8,
     "content": {},
     "hasPrompt": false

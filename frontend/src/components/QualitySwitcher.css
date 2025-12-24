@@ -1,0 +1,93 @@
+/* QualitySwitcher.css - Telegram Web K Native Style */
+.quality-switcher-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    /* Fit content */
+
+    /* Star Counter Styles */
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    height: 28px;
+    box-sizing: border-box;
+
+    /* Padding adjustments for Text Left / Toggle Right */
+    /* Left: 12px for Text. Right: 2px (Toggle has 4px padding -> 6px visual, or tweak to match) */
+    padding: 0 2px 0 12px;
+    gap: 0;
+}
+
+.checkbox-field-toggle {
+    --size: 20px;
+    margin: 0;
+    /* Zero margin for alignment */
+    padding: 0 .25rem;
+    /* Slight padding for click area */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    height: 100%;
+    /* Match container */
+}
+
+.checkbox-field-toggle .checkbox-toggle {
+    --offset: 3px;
+    --toggle-width: 1.9375rem;
+    width: var(--toggle-width);
+    height: .875rem;
+    background-color: var(--tg-theme-hint-color, #c4c9cc);
+    border-radius: 12px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0 var(--offset);
+    transition: background-color .1s;
+}
+
+.checkbox-field-toggle .checkbox-toggle-circle {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--tg-theme-hint-color, #c4c9cc);
+    background-color: #ffffff;
+    content: " ";
+    transform: translate(calc(var(--offset) * -1));
+    border-radius: 50%;
+    position: absolute;
+    inset-inline-start: 0;
+    transition: border-color .1s, transform .1s cubic-bezier(.22, .75, .7, 1.3);
+    box-sizing: border-box;
+}
+
+/* Input Styling */
+.checkbox-field-input {
+    appearance: none;
+    -webkit-appearance: none;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Dark Mode Default Base */
+@media (prefers-color-scheme: dark) {
+    .checkbox-field-toggle .checkbox-toggle {
+        background-color: var(--tg-theme-hint-color, #ff00ff);
+    }
+
+    .checkbox-field-toggle .checkbox-toggle-circle {
+        border-color: var(--tg-theme-hint-color, #707579);
+    }
+}
+
+/* Checked State - Defined LAST and/or !important to ensure visibility */
+.checkbox-field-input:checked+.checkbox-toggle {
+    background-color: #ff00ff !important;
+}
+
+.checkbox-field-input:checked+.checkbox-toggle .checkbox-toggle-circle {
+    border-color: #ff00ff !important;
+    background-color: #ffffff;
+    transform: translate(calc(1.9375rem - 1.25rem + 3px));
+}

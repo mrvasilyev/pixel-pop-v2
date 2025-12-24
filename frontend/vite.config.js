@@ -113,8 +113,9 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'https://pixelpop-test.up.railway.app',
+        target: 'http://localhost:8000',
         changeOrigin: true,
+        secure: false,
       }
     }
   },

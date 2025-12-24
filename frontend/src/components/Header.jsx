@@ -6,16 +6,30 @@ import headerData from '../content/header.json';
 // Mocking version/env for now as they are not directly available in v2 structure yet
 const version = "1.6.12";
 
+import { useUser } from '../context/UserContext';
+import Paywall from './Paywall';
+import QualitySwitcher from './QualitySwitcher';
+
+import Skeleton from './Skeleton';
+
 const Header = () => {
     const { logo, background } = headerData;
     const [showInfo, setShowInfo] = useState(false);
+    const { user, loading, openPaywall } = useUser();
 
-    // Placeholder for image count - in a real app this would come from props or store
-    const imageCount = 0;
+    // Use credits from user context
+    const credits = user?.credits || 0;
 
     const getCounterText = (n) => {
+        if (loading) return ""; // Handled by Skeleton
         if (n === 0) return "Add";
-        return n.toString();
+        if (n === 1) return "1 Image";
+        return `${n} Images`;
+    };
+
+    const handleCounterClick = () => {
+        // Open Paywall on click (always allow top-up, but definitely when 'Add')
+        openPaywall();
     };
 
     const getPlatformDisplay = () => {
@@ -53,23 +67,27 @@ const Header = () => {
             )}
 
             <div className="header-control-left">
-                <div className="star-counter">
+                <div className="star-counter" onClick={handleCounterClick} style={{ cursor: 'pointer' }}>
                     <img src="/stars.png" alt="Stars" className="star-icon-img" />
-                    <span className="counter-text">{getCounterText(imageCount)}</span>
+                    {loading ? (
+                        <Skeleton width="60px" height="16px" borderRadius="10px" />
+                    ) : (
+                        <span className="counter-text">{getCounterText(credits)}</span>
+                    )}
                 </div>
             </div>
 
-            {/* Right Control: Info Button */}
+            {/* Right Control: Quality Switcher */}
             <div className="header-control-right">
-                <button className="info-button" onClick={() => setShowInfo(true)}>
-                    <Info size={20} />
-                </button>
+                <QualitySwitcher />
             </div>
 
-            {/* Center Content: Logo */}
-            <div className="header-content">
+            {/* Center Content: Logo (Info Trigger) */}
+            <div className="header-content" onClick={() => setShowInfo(true)} style={{ cursor: 'pointer' }}>
                 {logo && <img src={logo} alt="Logo" className="header-logo" />}
             </div>
+
+            {/* Paywall Modal Removed (Global) */}
 
             {/* Info Popup */}
             {showInfo && (

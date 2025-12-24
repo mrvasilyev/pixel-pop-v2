@@ -1,8 +1,8 @@
 {
     "title": "Me as The Girl with a Pearl",
-    "cover": "/images/discover/me-as-the-girl-with-a-pearl.webp",
-    "prompt": "",
+    "cover": "/images/discover/me-as-the-girl-with-a-pearl/cover.webp",
+    "prompt": "Classic oil painting style, Vermeer's Girl with a Pearl Earring composition, historical fine art aesthetic, soft window light, cracking canvas texture.",
     "order": 5,
     "content": {},
-    "hasPrompt": false
+    "hasPrompt": true
 }

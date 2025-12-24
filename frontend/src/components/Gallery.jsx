@@ -4,8 +4,10 @@ import { Sparkles, Lollipop } from 'lucide-react';
 import headerData from '../content/header.json';
 import { generateImage, uploadImage } from '../api/client';
 import { useGallery } from '../hooks/useGallery';
+import { useUser } from '../context/UserContext';
 import PreviewModal from './PreviewModal'; // New Import
 import ManifestingImage from './ManifestingImage'; // New Import
+import Skeleton from './Skeleton'; // New Import
 
 import { usePhotoAction } from '../hooks/usePhotoAction';
 
@@ -31,6 +33,22 @@ const Gallery = () => {
             // 2. Upload Image
             const imageUrl = await uploadImage(file);
 
+            // 2.5 Calculate Aspect Ratio for Generation Size
+            let genSize = "1024x1024";
+            try {
+                const img = new Image();
+                img.src = objectUrl;
+                await new Promise(resolve => { img.onload = resolve; });
+                const ratio = img.width / img.height;
+
+                if (ratio > 1.1) genSize = "1792x1024"; // Landscape
+                else if (ratio < 0.9) genSize = "1024x1792"; // Portrait
+                // else Square
+                console.log(`📏 Auto Aspect Ratio: ${ratio.toFixed(2)} -> ${genSize}`);
+            } catch (e) {
+                console.warn("Aspect ratio check failed, defaulting to square", e);
+            }
+
             // 3. Generate with Special Prompt
             // Use 'header-special' as style_id or a generic one if not needed by backend for this specific flow
             // Ideally we should have a styleId but header.json doesn't have one. 
@@ -42,7 +60,7 @@ const Gallery = () => {
                 headerData.specialPrompt,
                 'header-special',
                 'header-cta',
-                { init_image: imageUrl }
+                { init_image: imageUrl, size: genSize }
             );
 
             // 4. Update Images (Handled by React Query or Manual Append)
@@ -63,7 +81,7 @@ const Gallery = () => {
         }
     };
 
-    const { triggerPhotoAction, PhotoInputs } = usePhotoAction({
+    const { triggerPhotoAction, actionSheetUI } = usePhotoAction({
         onPhotoSelected: handlePhotoSelected
     });
 
@@ -117,7 +135,14 @@ const Gallery = () => {
     // };
 
     // Updated CTA Handler
+    // Updated CTA Handler
+    const { user, openPaywall } = useUser();
+
     const handleGenerate = async () => {
+        if (!user || user.credits <= 0) {
+            openPaywall();
+            return;
+        }
         triggerPhotoAction({
             title: headerData.ctaButtonText || "Try a Style",
             subtitle: "Choose a photo to get started"
@@ -126,7 +151,7 @@ const Gallery = () => {
 
     return (
         <div className="section-container">
-            <PhotoInputs />
+            {actionSheetUI}
             <div className="section-header">My images</div>
 
             {(showLoading || images.length > 0) ? (
@@ -161,11 +186,10 @@ const Gallery = () => {
                         </div>
                     )}
 
-                    {/* Initial Loading State for Gallery (Skeleton-like or just Spinner) */}
                     {isLoading && !isGenerating && (
                         Array.from({ length: 4 }).map((_, i) => (
-                            <div key={`skeleton-${i}`} className="gallery-item loading-placeholder" style={{ opacity: 0.5 }}>
-                                <div className="loading-blur" />
+                            <div key={`skeleton-${i}`} className="gallery-item" style={{ overflow: 'hidden' }}>
+                                <Skeleton width="100%" height="100%" borderRadius="0" />
                             </div>
                         ))
                     )}
