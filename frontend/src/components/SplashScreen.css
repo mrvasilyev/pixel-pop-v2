@@ -21,9 +21,8 @@
 }
 
 .splash-spinner {
-    width: 180px;
-    /* Increased size as requested */
-    height: 180px;
+    width: 100px;
+    height: 100px;
     animation: spin 3s linear infinite;
     /* Optional: Add a subtle pulse or bounce if requested later */
 }
