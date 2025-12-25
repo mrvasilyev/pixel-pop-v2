@@ -1,22 +1,26 @@
 import React, { useEffect, useRef } from 'react';
-import { X, Check } from 'lucide-react';
+import { CircleX, Check } from 'lucide-react';
 import './Paywall.css';
+import { login } from '../api/client';
 
 const PLANS = [
     {
         id: 'starter',
         name: 'Starter',
         stars: 250,
-        priceDisplay: '~$4.99',
+        priceDisplay: '250 Stars',
         features: ['10 Medium-quality images', 'Fast generation', 'All basic styles', 'Small watermark'],
         isBest: false,
-        icon: '/stars.png'
+        icon: '/stars.png',
+        creditType: 'basic',
+        basicCredits: 10,
+        premiumCredits: 0
     },
     {
         id: 'creator',
         name: 'Creator',
         stars: 1500,
-        priceDisplay: '~$29.99',
+        priceDisplay: '1500 Stars',
         features: [
             '10 Medium images',
             '5 Premium images',
@@ -24,13 +28,16 @@ const PLANS = [
             'No watermark'
         ],
         isBest: true,
-        icon: '/stars.png'
+        icon: '/stars.png',
+        creditType: 'bundle',
+        basicCredits: 10,
+        premiumCredits: 5
     },
     {
         id: 'magician',
         name: 'Magician',
         stars: 1500,
-        priceDisplay: '~$29.99',
+        priceDisplay: '1500 Stars',
         features: [
             '10 Premium images',
             'Maximum realism',
@@ -39,7 +46,10 @@ const PLANS = [
             'Best for final avatars & profiles'
         ],
         isBest: false,
-        icon: '/stars.png'
+        icon: '/stars.png',
+        creditType: 'premium',
+        basicCredits: 0,
+        premiumCredits: 10
     }
 ];
 
@@ -88,11 +98,46 @@ const Paywall = ({ isOpen, onClose }) => {
         }
     }, [isOpen]);
 
-    const handleBuy = (plan) => {
+    const handleBuy = async (plan) => {
         if (window.Telegram?.WebApp?.HapticFeedback) {
             window.Telegram.WebApp.HapticFeedback.impactOccurred('heavy');
         }
         console.log(`Initiating purchase for ${plan.name} (${plan.stars} Stars)`);
+
+        try {
+            const token = await login();
+
+            if (!token) {
+                console.error("No auth token available");
+                return;
+            }
+
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/debug/purchase`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    plan_id: plan.id,
+                    basic_credits: plan.basicCredits,
+                    premium_credits: plan.premiumCredits
+                })
+            });
+
+            if (response.ok) {
+                console.log("Purchase successful (Simulated)");
+                // Close paywall
+                onClose();
+                // Optionally trigger a reload or event to refresh balance
+                window.location.reload(); // Simple brute force refresh for MVP
+            } else {
+                console.error("Purchase failed", await response.text());
+            }
+
+        } catch (error) {
+            console.error("Purchase error:", error);
+        }
     };
 
     if (!isOpen) return null;
@@ -102,8 +147,12 @@ const Paywall = ({ isOpen, onClose }) => {
     return (
         <div className={`paywall-overlay ${themeClass}`} onClick={onClose}>
             <div className="paywall-content" onClick={e => e.stopPropagation()}>
+                <button className="close-button" onClick={onClose}>
+                    <CircleX size={28} />
+                </button>
 
                 <div className="paywall-header">
+
                     {/* Centered Image */}
                     <div style={{ marginBottom: '10px', marginTop: '40px' }}>
                         <img src="/stars.png" alt="Stars" style={{ width: '48px', height: '48px' }} />
@@ -128,7 +177,6 @@ const Paywall = ({ isOpen, onClose }) => {
                             <div className="plan-stars">
                                 {plan.stars} <img src="/stars.png" alt="" className="star-icon-text" />
                             </div>
-                            <div className="plan-price">{plan.priceDisplay}</div>
 
                             <ul className="plan-features">
                                 {plan.features.map((feature, idx) => (

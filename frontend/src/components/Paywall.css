@@ -39,6 +39,29 @@
     /* Default Base Styles (Light Theme Safety Fallback) */
     background-color: #ffffff;
     color: #000000;
+    position: relative;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--tg-theme-text-color, inherit);
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: opacity 0.2s;
+    opacity: 0.6;
+}
+
+.close-button:hover {
+    opacity: 1;
 }
 
 .paywall-header {
@@ -98,10 +121,7 @@
     line-height: 1;
 }
 
-.close-button {
-    /* Deprecated but keeping style just in case of revert */
-    display: none;
-}
+
 
 .paywall-title {
     font-size: 24px;

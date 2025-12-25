@@ -21,11 +21,16 @@ const QualitySwitcher = () => {
     // If user has > 100 credits, they can toggle Pro On/Off?
     // Or is "Pro" simply ON if they have credits?
     // Let's assume standard toggle behavior: User can choose to enable/disable Pro if unlocked.
-    const [isProOn, setIsProOn] = useState(false);
-    const { user, openPaywall } = useUser();
+    // Use Global State
+    const { user, openPaywall, isPremiumMode, setIsPremiumMode } = useUser();
 
-    // Determine if Pro is unlocked
-    const isProUnlocked = user?.credits > 100;
+    // Local visual state can mirror global, or use it directly.
+    // Let's use it directly.
+    const isProOn = isPremiumMode;
+    const setIsProOn = setIsPremiumMode;
+
+    // Determine if Pro is unlocked: Check if user has premium credits
+    const isProUnlocked = (user?.premium_credits || 0) > 0;
 
     // Effect: If locked, force Off
     useEffect(() => {

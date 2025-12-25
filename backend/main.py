@@ -106,6 +106,7 @@ async def get_current_user(authorization: str = Header(...)):
         return {
             "id": user_id,
             "credits": balance_data.get("credits", 0),
+            "premium_credits": balance_data.get("premium_credits", 0),
             "balance": balance_data.get("balance", 0.0),
             "username": user_data.get("username"),
             "first_name": user_data.get("first_name"),
@@ -113,6 +114,59 @@ async def get_current_user(authorization: str = Header(...)):
         }
     except Exception as e:
         print(f"❌ Get User Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/debug/purchase")
+async def debug_purchase(
+    request: Request,
+    authorization: str = Header(...)
+):
+    """
+    DEBUG: Simulates a purchase by directly adding credits.
+    """
+    user_id = verify_jwt_token(authorization, JWT_SECRET)
+    
+    body = await request.json()
+    plan_id = body.get("plan_id")
+    basic_credits = body.get("basic_credits", 0)
+    premium_credits = body.get("premium_credits", 0)
+    
+    # Import locally
+    from worker import supabase
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    print(f"💰 DEBUG PURCHASE: User {user_id} bought {plan_id} (+{basic_credits} basic, +{premium_credits} prem)")
+    
+    try:
+        # Get current balance
+        res = supabase.table("user_balances").select("*").eq("user_id", user_id).execute()
+        
+        current_basic = 0
+        current_prem = 0
+        
+        if res.data:
+            current_basic = res.data[0].get("credits", 0)
+            current_prem = res.data[0].get("premium_credits", 0)
+            
+            # Update
+            supabase.table("user_balances").update({
+                "credits": current_basic + basic_credits,
+                "premium_credits": current_prem + premium_credits
+            }).eq("user_id", user_id).execute()
+        else:
+            # Create
+            supabase.table("user_balances").insert({
+                "user_id": user_id,
+                "credits": basic_credits,
+                "premium_credits": premium_credits,
+                "balance": 0.0
+            }).execute()
+            
+        return {"status": "success", "message": f"Added {basic_credits} basic and {premium_credits} premium credits"}
+        
+    except Exception as e:
+        print(f"❌ Debug Purchase Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generation", status_code=202)
@@ -133,7 +187,41 @@ async def create_generation_job(
     
     print(f"📥 Job Request from User {user_id}: {prompt[:30]}...")
 
-    # 3. Enqueue Job
+    # 3. Check Balance & Determine Watermark
+    # Import locally to use supabase
+    from worker import supabase
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    
+    # Get current balance
+    bal_res = supabase.table("user_balances").select("credits, premium_credits").eq("user_id", user_id).execute()
+    if not bal_res.data:
+         raise HTTPException(status_code=403, detail="User balance not found")
+    
+    balance = bal_res.data[0]
+    basic_creds = balance.get("credits", 0)
+    prem_creds = balance.get("premium_credits", 0)
+
+    quality = model_config.get("quality", "standard")
+    should_watermark = True
+
+    if quality == "high":
+        # Check Premium Credits
+        if prem_creds < 1:
+             raise HTTPException(status_code=402, detail="Insufficient Premium Credits. Please upgrade your plan.")
+        should_watermark = False
+    else:
+        # Check Basic Credits
+        if basic_creds < 1:
+             raise HTTPException(status_code=402, detail="Insufficient Basic Credits. Please top up.")
+        should_watermark = True
+
+    # 4. Enqueue Job
+    # We pass should_watermark to the worker via model_config or top-level job args?
+    # JobManager enqueue accepts model_config. Let's put it there for now or separate.
+    # JobManager.enqueue_job just stores the dict. We can add it to model_config.
+    model_config["should_watermark"] = should_watermark
+    
     job_id = await job_manager.enqueue_job(prompt, model_config, user_id)
     
     return {

@@ -37,7 +37,10 @@ export default function TopStyles() {
             // 2. Start Generation
             // Use the style's prompt + init_image
             const prompt = style.prompt || `A photo in ${style.title} style`;
-            await generateImage(prompt, style.title, 'style-transfer', { init_image: url });
+            await generateImage(prompt, style.title, 'style-transfer', {
+                init_image: url,
+                quality: isPremiumMode ? 'high' : 'standard'
+            });
 
             // 3. Refresh Gallery
             await queryClient.invalidateQueries({ queryKey: ['gallery'] });
@@ -55,12 +58,19 @@ export default function TopStyles() {
     };
 
     const { triggerPhotoAction, actionSheetUI } = usePhotoAction({ onPhotoSelected: handlePhotoSelected });
-    const { user, openPaywall } = useUser();
+    const { user, openPaywall, isPremiumMode } = useUser();
 
     const handleStyleClick = (style) => {
-        if (!user || user.credits <= 0) {
-            openPaywall();
-            return;
+        if (isPremiumMode) {
+            if (!user || (user.premium_credits || 0) < 1) {
+                openPaywall();
+                return;
+            }
+        } else {
+            if (!user || (user.credits || 0) < 1) {
+                openPaywall();
+                return;
+            }
         }
         pendingStyleRef.current = style;
         triggerPhotoAction(style.title);

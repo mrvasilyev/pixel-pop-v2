@@ -54,13 +54,25 @@ export const UserProvider = ({ children }) => {
 
     const [isPaywallOpen, setIsPaywallOpen] = useState(false);
 
+    // Premium Mode State (Global preference for generation quality)
+    const [isPremiumMode, setIsPremiumMode] = useState(false);
+
     const openPaywall = () => setIsPaywallOpen(true);
     const closePaywall = () => setIsPaywallOpen(false);
 
     const refreshUser = () => fetchUser();
 
     return (
-        <UserContext.Provider value={{ user, loading, refreshUser, isPaywallOpen, openPaywall, closePaywall }}>
+        <UserContext.Provider value={{
+            user,
+            loading,
+            refreshUser,
+            isPaywallOpen,
+            openPaywall,
+            closePaywall,
+            isPremiumMode,
+            setIsPremiumMode
+        }}>
             {children}
         </UserContext.Provider>
     );

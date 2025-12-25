@@ -34,7 +34,12 @@ const Gallery = () => {
             const imageUrl = await uploadImage(file);
 
             // 2.5 Calculate Aspect Ratio for Generation Size
+            // 2.5 Aspect Ratio Check
+            // NOTE: We Force 1024x1024 (Square) because 'gpt-image-1.5' (Edit/Img2Img) likely relies on DALL-E 2 logic
+            // which center-crops non-square inputs or only supports square. 
+            // Requesting Portrait (1024x1792) caused "Cut Top/Bottom" issues.
             let genSize = "1024x1024";
+            /* 
             try {
                 const img = new Image();
                 img.src = objectUrl;
@@ -48,6 +53,7 @@ const Gallery = () => {
             } catch (e) {
                 console.warn("Aspect ratio check failed, defaulting to square", e);
             }
+            */
 
             // 3. Generate with Special Prompt
             // Use 'header-special' as style_id or a generic one if not needed by backend for this specific flow

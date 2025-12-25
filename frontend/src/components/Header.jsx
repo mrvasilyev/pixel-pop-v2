@@ -15,16 +15,17 @@ import Skeleton from './Skeleton';
 const Header = () => {
     const { logo, background } = headerData;
     const [showInfo, setShowInfo] = useState(false);
-    const { user, loading, openPaywall } = useUser();
+    const { user, loading, openPaywall, isPremiumMode } = useUser();
 
-    // Use credits from user context
-    const credits = user?.credits || 0;
+    // Use credits based on mode
+    const credits = isPremiumMode ? (user?.premium_credits || 0) : (user?.credits || 0);
 
     const getCounterText = (n) => {
         if (loading) return ""; // Handled by Skeleton
+        const label = isPremiumMode ? "Premium" : "Images";
         if (n === 0) return "Add";
-        if (n === 1) return "1 Image";
-        return `${n} Images`;
+        if (n === 1) return `1 ${label}`;
+        return `${n} ${label}`;
     };
 
     const handleCounterClick = () => {

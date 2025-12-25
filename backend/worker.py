@@ -104,7 +104,11 @@ async def generate_with_retry(prompt, model_config):
             cw, ch = map(int, target_size_str.split('x'))
             
             # Load
-            input_pil = Image.open(BytesIO(img_response.content)).convert("RGBA")
+            input_pil = Image.open(BytesIO(img_response.content))
+            input_pil = ImageOps.exif_transpose(input_pil) # Fix Orientation
+            input_pil = input_pil.convert("RGBA")
+            iw, ih = input_pil.size
+            print(f"📏 Input Image Size: {iw}x{ih} (Ratio: {iw/ih:.2f})")
             
             # Pad (Letterbox) to fit target size while maintaining aspect ratio
             # color=(0,0,0,0) for transparent padding, or matching content?
@@ -114,6 +118,8 @@ async def generate_with_retry(prompt, model_config):
             # Let's use ImageOps.pad which centers the image.
             # We resize the input to FIT inside target, then pad.
             padded_pil = ImageOps.pad(input_pil, (cw, ch), color=(0, 0, 0, 0))
+            pw, ph = padded_pil.size
+            print(f"📏 Padded Image Size: {pw}x{ph} (Target: {cw}x{ch})")
             
             # Save to bytes
             input_byte_arr = BytesIO()
@@ -132,7 +138,8 @@ async def generate_with_retry(prompt, model_config):
             )
         else:
             # Text-to-Image Mode
-            print(f"🎨 Calling OpenAI Generate: {prompt[:30]}...")
+            # Use gpt-image-1.5
+            print(f"🎨 Calling OpenAI Generate (gpt-image-1.5): {prompt[:30]}...")
             response = await openai_client.images.generate(
                 model="gpt-image-1.5",
                 prompt=prompt,
@@ -176,106 +183,113 @@ async def process_job(job_manager: JobManager, job: dict):
              raise ValueError(f"No image data found (url={image_url}, b64_json={'YES' if b64_json else 'None'})")
 
         # --- Watermark Logic ---
-        try:
-            from PIL import Image, ImageDraw, ImageFont
+        should_watermark = job.get("model_config", {}).get("should_watermark", True)
+        
+        if should_watermark:
+            try:
+                from PIL import Image, ImageDraw, ImageFont
+                
+                print("💧 Applying Watermark...")
+                
+                # Load Image
+                orig_image = Image.open(BytesIO(img_data)).convert("RGBA")
+                width, height = orig_image.size
+                
+                # Create Watermark Layer
+                txt_layer = Image.new("RGBA", orig_image.size, (255, 255, 255, 0))
+                draw = ImageDraw.Draw(txt_layer)
+                
+                # Font Settings
+                text = "Generated with PIXEL POP • @pixel_pop_bot"
+                font_size = 24 # Increased from 20 for visibility (V1 style)
+                font = ImageFont.load_default() # Fallback
+    
+                # Try to load a nicer font if available (common linux paths)
+                possible_fonts = [
+                    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+                    "/app/fonts/Roboto-Regular.ttf", # Custom path if needed
+                ]
+                
+                font_path = None
+                for p in possible_fonts:
+                    if os.path.exists(p):
+                        font_path = p
+                        break
+                
+                # Fallback: Download Roboto to local dir if not found locally
+                if not font_path:
+                    try:
+                        # Use raw.githubusercontent correct repo
+                        font_url = "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf"
+                        temp_font_path = "Roboto-Regular.ttf" # Save in CWD
+                        
+                        if not os.path.exists(temp_font_path) or os.path.getsize(temp_font_path) < 1000:
+                            print(f"⬇️ Downloading Font from {font_url}...")
+                            import requests
+                            # Add headers to avoid bot blocking
+                            r = requests.get(font_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
+                            r.raise_for_status()
+                            with open(temp_font_path, "wb") as f:
+                                f.write(r.content)
+                            print(f"✅ Font downloaded: {os.path.getsize(temp_font_path)} bytes")
+                        
+                        font_path = temp_font_path
+                    except Exception as dl_err:
+                        print(f"⚠️ Font Download Failed: {dl_err}")
+    
+                if font_path:
+                    try:
+                        font = ImageFont.truetype(font_path, font_size)
+                        print(f"✅ Loaded Font: {font_path}")
+                    except Exception as font_err:
+                        print(f"⚠️ Failed to load TrueType font ({font_path}): {font_err}")
+                        print("⚠️ Falling back to default font (bitmap)")
+                
+                # Rotate Text: Create temporary image for text to rotate it
+                # Text size
+                bbox = draw.textbbox((0, 0), text, font=font)
+                text_w = bbox[2] - bbox[0]
+                text_h = bbox[3] - bbox[1]
+                
+                # Create separate image for text with GENEROUS padding to prevent any clipping
+                safe_padding = 20 # 10px on each side
+                text_img = Image.new('RGBA', (text_w + safe_padding, text_h + safe_padding), (255, 255, 255, 0)) 
+                text_draw = ImageDraw.Draw(text_img)
+                
+                # V1 Style: No stroke, 90% opacity white, Bullet point restored
+                # Use offset with padding to ensure no clipping
+                draw_x = (safe_padding // 2) - bbox[0]
+                draw_y = (safe_padding // 2) - bbox[1]
+                text_draw.text((draw_x, draw_y), text, font=font, fill=(255, 255, 255, 230)) 
+                
+                # Rotate 90 degrees counter-clockwise
+                rotated_text = text_img.rotate(90, expand=True) 
+                
+                # Position: Right edge, bottom
+                padding_right = 20 
+                padding_bottom = 40
+                
+                x = width - rotated_text.width - padding_right
+                y = height - rotated_text.height - padding_bottom
+                
+                # Draw rotated text onto layer
+                txt_layer.paste(rotated_text, (x, y), rotated_text)
+                
+                # Composite
+                watermarked = Image.alpha_composite(orig_image, txt_layer)
+                
+                # Save back to bytes
+                out_buffer = BytesIO()
+                watermarked.convert("RGB").save(out_buffer, format="PNG")
+                img_data = out_buffer.getvalue()
+                print("✅ Watermark Applied Successfully (Stroked)")
             
-            print("💧 Applying Watermark...")
-            # Load Image
-            orig_image = Image.open(BytesIO(img_data)).convert("RGBA")
-            width, height = orig_image.size
+            except Exception as e:
+                print(f"⚠️ Watermark Failed (Skipping): {e}")
             
-            # Create Watermark Layer
-            txt_layer = Image.new("RGBA", orig_image.size, (255, 255, 255, 0))
-            draw = ImageDraw.Draw(txt_layer)
-            
-            # Font Settings
-            text = "Generated with PIXEL POP • @pixel_pop_bot"
-            font_size = 24 # Increased from 20 for visibility (V1 style)
-            font = ImageFont.load_default() # Fallback
-
-            # Try to load a nicer font if available (common linux paths)
-            possible_fonts = [
-                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-                "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-                "/app/fonts/Roboto-Regular.ttf", # Custom path if needed
-            ]
-            
-            font_path = None
-            for p in possible_fonts:
-                if os.path.exists(p):
-                    font_path = p
-                    break
-            
-            # Fallback: Download Roboto to local dir if not found locally
-            if not font_path:
-                try:
-                    # Use raw.githubusercontent correct repo
-                    font_url = "https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf"
-                    temp_font_path = "Roboto-Regular.ttf" # Save in CWD
-                    
-                    if not os.path.exists(temp_font_path) or os.path.getsize(temp_font_path) < 1000:
-                        print(f"⬇️ Downloading Font from {font_url}...")
-                        import requests
-                        # Add headers to avoid bot blocking
-                        r = requests.get(font_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10)
-                        r.raise_for_status()
-                        with open(temp_font_path, "wb") as f:
-                            f.write(r.content)
-                        print(f"✅ Font downloaded: {os.path.getsize(temp_font_path)} bytes")
-                    
-                    font_path = temp_font_path
-                except Exception as dl_err:
-                    print(f"⚠️ Font Download Failed: {dl_err}")
-
-            if font_path:
-                try:
-                    font = ImageFont.truetype(font_path, font_size)
-                    print(f"✅ Loaded Font: {font_path}")
-                except Exception as font_err:
-                    print(f"⚠️ Failed to load TrueType font ({font_path}): {font_err}")
-                    print("⚠️ Falling back to default font (bitmap)")
-            
-            # Rotate Text: Create temporary image for text to rotate it
-            # Text size
-            bbox = draw.textbbox((0, 0), text, font=font)
-            text_w = bbox[2] - bbox[0]
-            text_h = bbox[3] - bbox[1]
-            
-            # Create separate image for text with GENEROUS padding to prevent any clipping
-            safe_padding = 20 # 10px on each side
-            text_img = Image.new('RGBA', (text_w + safe_padding, text_h + safe_padding), (255, 255, 255, 0)) 
-            text_draw = ImageDraw.Draw(text_img)
-            
-            # V1 Style: No stroke, 90% opacity white, Bullet point restored
-            # Use offset with padding to ensure no clipping
-            draw_x = (safe_padding // 2) - bbox[0]
-            draw_y = (safe_padding // 2) - bbox[1]
-            text_draw.text((draw_x, draw_y), text, font=font, fill=(255, 255, 255, 230)) 
-            
-            # Rotate 90 degrees counter-clockwise
-            rotated_text = text_img.rotate(90, expand=True) 
-            
-            # Position: Right edge, bottom
-            padding_right = 20 
-            padding_bottom = 40
-            
-            x = width - rotated_text.width - padding_right
-            y = height - rotated_text.height - padding_bottom
-            
-            # Draw rotated text onto layer
-            txt_layer.paste(rotated_text, (x, y), rotated_text)
-            
-            # Composite
-            watermarked = Image.alpha_composite(orig_image, txt_layer)
-            
-            # Save back to bytes
-            out_buffer = BytesIO()
-            watermarked.convert("RGB").save(out_buffer, format="PNG")
-            img_data = out_buffer.getvalue()
-            print("✅ Watermark Applied Successfully (Stroked)")
-            
-        except Exception as e:
-            print(f"⚠️ Watermark Failed (Skipping): {e}")
+        else:
+             print("✨ Premium Generation: Watermark Skipped")
 
         # 3. Upload to S3
         s3_key = f"generations/{job['user_id']}/{job_id}.png"
@@ -329,11 +343,21 @@ async def process_job(job_manager: JobManager, job: dict):
                 tx_data = {
                     "user_id": job.get("user_id"),
                     "amount": -cost, # Negative for usage
-                    "credits_change": -1, # Deduct 1 credit (image) per generation
                     "transaction_type": "GENERATION_USAGE",
                     "description": f"Gen {model_tier.upper()}",
                     "reference_id": job_id # Idempotency Key
                 }
+                
+                # Determine which credit to deduct based on what was authorized in main.py
+                # Re-check quality/watermark config
+                qual_check = job.get("model_config", {}).get("quality", "standard")
+                if qual_check == "high":
+                    tx_data["premium_credits_change"] = -1
+                    tx_data["credits_change"] = 0
+                else:
+                    tx_data["premium_credits_change"] = 0
+                    tx_data["credits_change"] = -1
+
                 tx_res = supabase.table("user_transactions").insert(tx_data).execute()
                 if tx_res.data:
                     transaction_id = tx_res.data[0]["id"]
