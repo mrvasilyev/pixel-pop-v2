@@ -158,7 +158,7 @@
     max-width: 320px;
     scroll-snap-align: center;
     border-radius: 16px;
-    padding: 24px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -175,7 +175,7 @@
 .plan-card-icon {
     width: 64px;
     height: 64px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     object-fit: contain;
 }
 
@@ -209,7 +209,7 @@
 .plan-features {
     list-style: none;
     padding: 0;
-    margin: 0 0 24px;
+    margin: 0 0 16px;
     width: 100%;
 }
 

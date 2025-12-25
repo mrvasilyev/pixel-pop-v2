@@ -154,7 +154,7 @@ const Paywall = ({ isOpen, onClose }) => {
                 <div className="paywall-header">
 
                     {/* Centered Image */}
-                    <div style={{ marginBottom: '10px', marginTop: '40px' }}>
+                    <div style={{ marginBottom: '10px', marginTop: '10px' }}>
                         <img src="/stars.png" alt="Stars" style={{ width: '48px', height: '48px' }} />
                     </div>
 
