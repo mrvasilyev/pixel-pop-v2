@@ -167,6 +167,8 @@
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
+    min-height: 480px;
+    /* Ensure buttons align */
     box-sizing: border-box;
     /* Ensure padding doesn't affect calculation */
 
