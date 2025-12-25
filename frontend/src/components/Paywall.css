@@ -48,7 +48,7 @@
     border: none;
     padding: 0;
     cursor: pointer;
-    color: #cccccc;
+    color: var(--tg-theme-hint-color, #8e8e93);
     /* Explicit color */
     position: absolute;
     top: 16px;
