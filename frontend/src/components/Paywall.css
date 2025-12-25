@@ -166,8 +166,11 @@
     align-items: center;
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    min-height: 540px;
-    /* Increased to ensure buttons align even with more content */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: auto;
+    /* Reset to auto to fit content naturally */
+    min-height: 0;
+    /* potential override if needed */
     box-sizing: border-box;
     /* Ensure padding doesn't affect calculation */
 
@@ -217,6 +220,8 @@
     padding: 0;
     margin: 0 0 12px;
     width: 100%;
+    flex-grow: 1;
+    /* Pushes the button to the bottom */
 }
 
 .feature-item {
