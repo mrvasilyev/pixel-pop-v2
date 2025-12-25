@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './MainScreen.css';
-import { Star, Info, X } from 'lucide-react';
+import { Star, Info, X, CircleX } from 'lucide-react';
 import headerData from '../content/header.json';
 
 // Mocking version/env for now as they are not directly available in v2 structure yet
@@ -95,7 +95,7 @@ const Header = () => {
                 <div className="info-popup-overlay" onClick={() => setShowInfo(false)}>
                     <div className="info-popup-content" onClick={e => e.stopPropagation()}>
                         <button className="close-button" onClick={() => setShowInfo(false)}>
-                            <X size={20} />
+                            <CircleX size={20} />
                         </button>
 
                         <h2 className="popup-title">Pixel Pop</h2>
