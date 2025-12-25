@@ -42,8 +42,7 @@ const PLANS = [
             '10 Pro images',
             'Maximum realism',
             'Pro image quality',
-            'No watermark',
-            'Best for final avatars & profiles'
+            'No watermark'
         ],
         isBest: false,
         icon: '/stars.png',
