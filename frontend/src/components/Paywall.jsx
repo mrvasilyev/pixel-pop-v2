@@ -171,7 +171,7 @@ const Paywall = ({ isOpen, onClose }) => {
                                 </div>
                             )}
 
-                            <img src={plan.icon} alt="Stars" className="plan-card-icon" />
+
 
                             <div className="plan-name">{plan.name}</div>
                             <div className="plan-stars">
