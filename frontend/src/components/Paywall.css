@@ -146,6 +146,8 @@
     gap: 16px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    align-items: stretch;
+    /* Ensure all cards stretch to same height */
 }
 
 .carousel-container::-webkit-scrollbar {
