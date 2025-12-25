@@ -47,7 +47,7 @@
     border: none;
     padding: 0;
     cursor: pointer;
-    color: var(--tg-theme-text-color, inherit);
+    color: #cccccc;
     position: absolute;
     top: 16px;
     right: 16px;
