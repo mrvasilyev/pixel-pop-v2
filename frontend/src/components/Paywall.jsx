@@ -23,7 +23,7 @@ const PLANS = [
         priceDisplay: '1500 Stars',
         features: [
             '10 Medium images',
-            '5 Premium images',
+            '5 Pro images',
             'Pro image quality',
             'No watermark'
         ],
@@ -39,7 +39,7 @@ const PLANS = [
         stars: 1500,
         priceDisplay: '1500 Stars',
         features: [
-            '10 Premium images',
+            '10 Pro images',
             'Maximum realism',
             'Pro image quality',
             'No watermark',

@@ -22,7 +22,7 @@ const Header = () => {
 
     const getCounterText = (n) => {
         if (loading) return ""; // Handled by Skeleton
-        const label = isPremiumMode ? "Premium" : "Images";
+        const label = isPremiumMode ? "Pro" : "Images";
         if (n === 0) return "Add";
         if (n === 1) return `1 ${label}`;
         return `${n} ${label}`;

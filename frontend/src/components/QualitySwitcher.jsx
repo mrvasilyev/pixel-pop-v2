@@ -59,7 +59,7 @@ const QualitySwitcher = () => {
 
     return (
         <div className="quality-switcher-container">
-            <span style={{ fontSize: '14px', fontWeight: 500, marginRight: '8px' }}>Premium</span>
+            <span style={{ fontSize: '14px', fontWeight: 500, marginRight: '8px' }}>Pro</span>
             <label className="checkbox-field checkbox-without-caption checkbox-field-toggle">
                 <input
                     className="checkbox-field-input"
@@ -71,7 +71,7 @@ const QualitySwitcher = () => {
                     <div className="checkbox-toggle-circle"></div>
                 </div>
                 {/* Hidden caption as per Telegram Web K structure */}
-                <div className="checkbox-caption" style={{ display: 'none' }}>Premium</div>
+                <div className="checkbox-caption" style={{ display: 'none' }}>Pro</div>
             </label>
         </div>
     );
