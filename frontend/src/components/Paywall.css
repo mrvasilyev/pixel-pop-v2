@@ -166,6 +166,9 @@
     align-items: center;
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    box-sizing: border-box;
+    /* Ensure padding doesn't affect calculation */
 
     /* Default Base Styles (Light Theme Safety Fallback) */
     background: rgba(0, 0, 0, 0.05);
