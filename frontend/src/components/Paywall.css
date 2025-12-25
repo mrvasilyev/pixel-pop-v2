@@ -138,15 +138,14 @@
 }
 
 /* Carousel Container */
-display: flex;
-overflow-x: auto;
-scroll-snap-type: x mandatory;
-padding: 20px 24px 40px;
-gap: 16px;
--webkit-overflow-scrolling: touch;
-scrollbar-width: none;
-align-items: stretch;
-/* Ensure all cards stretch to same height */
+.carousel-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 20px 24px 40px;
+    gap: 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
 }
 
 .carousel-container::-webkit-scrollbar {
@@ -193,8 +192,7 @@ align-items: stretch;
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 20px;
-    /* Increased from 4px/12px to add more space */
+    margin-bottom: 4px;
 }
 
 .star-icon-text {
