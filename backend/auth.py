@@ -7,7 +7,11 @@ from urllib.parse import parse_qsl
 import jwt
 from fastapi import HTTPException, Header
 
-# Test User ID from user request
+def validate_telegram_data(init_data: str, bot_token: str) -> dict:
+    """
+    Validates the Telegram WebApp initData.
+    Returns the user dict if valid, raises HTTPException otherwise.
+    """
     if not bot_token:
         print("⚠️ No BOT_TOKEN provided to validate_telegram_data")
         # In PROD/TEST, this should fail. Only in local dev with explicit mock hash should it pass.
