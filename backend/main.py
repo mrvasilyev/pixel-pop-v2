@@ -387,16 +387,7 @@ async def upload_file(
     """
     user_id = verify_jwt_token(authorization, JWT_SECRET)
     
-    # Placeholder for allow_origins, as per instruction.
-    # This list would typically be used in a CORS middleware configuration.
-    allow_origins_domains = [
-        "https://pixel-pop-v2.vercel.app",
-        "https://pixelpop.v2.frnt.d-t-a.ae",
-        "https://test.pixelpop.v2.frnt.d-t-a.ae",
-        "http://localhost:5173",
-        "http://localhost:5174",
-    ]
-    
+    # Import locally
     import boto3
     import time
     from io import BytesIO
