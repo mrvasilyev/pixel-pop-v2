@@ -4,7 +4,7 @@ import { Star, Info, X, CircleX } from 'lucide-react';
 import headerData from '../content/header.json';
 
 // Mocking version/env for now as they are not directly available in v2 structure yet
-const version = "1.6.12";
+const version = "0.0.3";
 
 import { useUser } from '../context/UserContext';
 import Paywall from './Paywall';
