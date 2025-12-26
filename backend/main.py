@@ -24,9 +24,17 @@ import asyncio
 app = FastAPI()
 
 # Allow CORS
+# Strict CORS
+origins = [
+    "https://pixelpop.v2.frnt.d-t-a.ae",
+    "https://test.pixelpop.v2.frnt.d-t-a.ae",
+    "http://localhost:5173",
+    "http://localhost:5174"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,7 +42,12 @@ app.add_middleware(
 
 # Initialize Job Manager (Global)
 job_manager = JobManager()
-JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-me")
+
+JWT_SECRET = os.getenv("JWT_SECRET")
+if not JWT_SECRET:
+    raise ValueError("CRITICAL: JWT_SECRET env var is missing! Cannot start.")
+    
+# Support both naming conventions to avoid config errors
 # Support both naming conventions to avoid config errors
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or ""
 

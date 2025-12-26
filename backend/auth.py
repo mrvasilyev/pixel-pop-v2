@@ -53,7 +53,13 @@ def create_jwt_token(user_id: int, secret: str) -> str:
     }
     return jwt.encode(payload, secret, algorithm="HS256")
 
-def verify_jwt_token(authorization: str = Header(...), secret: str = os.getenv("JWT_SECRET", "default-secret")) -> int:
+def verify_jwt_token(authorization: str = Header(...), secret: str = None) -> int:
+    if not secret:
+        # Fallback to env if not passed, but MUST exist
+        secret = os.getenv("JWT_SECRET")
+        if not secret:
+             raise HTTPException(status_code=500, detail="Server Error: JWT Config Missing")
+    
     print(f"🔒 Raw Auth Header: {authorization}")
     if not authorization.startswith("Bearer "):
         print("❌ Invalid Auth Header Format")

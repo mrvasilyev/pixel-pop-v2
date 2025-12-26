@@ -1,7 +1,20 @@
-import requests
+import os
+from dotenv import load_dotenv
 
-# Test Bot Token (mro_flug_bot)
-BOT_TOKEN = "7751667220:AAEqF_a9T2AZ0TlUqo1LnCiYXLl4yLvEhXU"
+# Load env from parent/frontend/.env logic similar to main.py to find the token
+# Try typical paths
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', '.env.test')
+if not os.path.exists(dotenv_path):
+    dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', '.env')
+
+load_dotenv(dotenv_path)
+
+# Test Bot Token
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+if not BOT_TOKEN:
+    print("❌ Error: TELEGRAM_BOT_TOKEN not found in environment.")
+    exit(1)
+
 WEBHOOK_URL = "https://test.pixelpop.v2.back.d-t-a.ae/api/telegram/webhook"
 
 def set_webhook():
