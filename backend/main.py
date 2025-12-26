@@ -503,14 +503,19 @@ async def telegram_webhook(request: Request):
             pcq = update["pre_checkout_query"]
             pcq_id = pcq["id"]
             
-            print(f"💳 Pre-Checkout: {pcq_id}. Token starts with: {BOT_TOKEN[:5] if BOT_TOKEN else 'NONE'}")
+            print(f"💳 Pre-Checkout: {pcq_id}. Token check: {'OK' if BOT_TOKEN else 'MISSING'}")
             
-            # Auto-accept
-            res = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerPreCheckoutQuery", json={
-                "pre_checkout_query_id": pcq_id,
-                "ok": True
-            })
-            print(f"📤 Answer Pre-Checkout: {res.status_code} {res.text}")
+            # Auto-accept using SDK (Async & Reliable)
+            try:
+                bot = get_bot()
+                if bot:
+                    await bot.answer_pre_checkout_query(pre_checkout_query_id=pcq_id, ok=True)
+                    print(f"✅ Answered Pre-Checkout (SDK): {pcq_id}")
+                else:
+                    print("❌ Bot instance missing for Pre-Checkout")
+            except Exception as e:
+                print(f"❌ Failed to Answer Pre-Checkout: {e}")
+                
             return {"ok": True}
 
         # 2. Successful Payment
