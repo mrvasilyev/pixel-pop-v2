@@ -8,6 +8,7 @@ import { useUser } from '../context/UserContext';
 import PreviewModal from './PreviewModal'; // New Import
 import ManifestingImage from './ManifestingImage'; // New Import
 import Skeleton from './Skeleton'; // New Import
+import FadeImage from './FadeImage'; // New Import
 
 import { usePhotoAction } from '../hooks/usePhotoAction';
 
@@ -211,7 +212,11 @@ const Gallery = () => {
                                     className="manifest-img"
                                 />
                             ) : (
-                                <img src={img.src} alt={`Gallery ${img.id}`} loading="lazy" />
+                                <FadeImage
+                                    src={img.src}
+                                    alt={`Gallery ${img.id}`}
+                                    loading="lazy"
+                                />
                             )}
                         </div>
                     ))}
