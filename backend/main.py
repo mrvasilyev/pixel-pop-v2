@@ -34,7 +34,8 @@ app.add_middleware(
 # Initialize Job Manager (Global)
 job_manager = JobManager()
 JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-me")
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+# Support both naming conventions to avoid config errors
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN") or ""
 
 @app.on_event("startup")
 async def startup_event():
