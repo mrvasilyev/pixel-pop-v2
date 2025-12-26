@@ -7,22 +7,22 @@ const PLANS = [
     {
         id: 'starter',
         name: 'Starter',
-        stars: 250,
-        priceDisplay: '250 Stars',
-        features: ['10 Medium-quality images', 'Fast generation', 'All basic styles', 'Small watermark'],
+        stars: 75,
+        priceDisplay: '75 Stars',
+        features: ['5 Medium-quality images', 'Fast generation', 'All basic styles', 'Small watermark'],
         isBest: false,
         icon: '/stars.png',
         creditType: 'basic',
-        basicCredits: 10,
+        basicCredits: 5,
         premiumCredits: 0
     },
     {
         id: 'creator',
         name: 'Creator',
-        stars: 1500,
-        priceDisplay: '1500 Stars',
+        stars: 250,
+        priceDisplay: '250 Stars',
         features: [
-            '10 Medium images',
+            '15 Medium images',
             '5 Pro images',
             'Pro image quality',
             'No watermark'
@@ -30,16 +30,17 @@ const PLANS = [
         isBest: true,
         icon: '/stars.png',
         creditType: 'bundle',
-        basicCredits: 10,
+        basicCredits: 15,
         premiumCredits: 5
     },
     {
         id: 'magician',
         name: 'Magician',
-        stars: 1500,
-        priceDisplay: '1500 Stars',
+        stars: 750,
+        priceDisplay: '750 Stars',
         features: [
-            '10 Pro images',
+            '40 Medium images',
+            '15 Pro images',
             'Maximum realism',
             'Pro image quality',
             'No watermark'
@@ -47,8 +48,8 @@ const PLANS = [
         isBest: false,
         icon: '/stars.png',
         creditType: 'premium',
-        basicCredits: 0,
-        premiumCredits: 10
+        basicCredits: 40,
+        premiumCredits: 15
     }
 ];
 
