@@ -425,13 +425,21 @@ else:
 
 # --- Telegram Stars Payment Logic ---
 import requests
+import telegram 
+from telegram.error import TelegramError
+
+# Initialize Bot Instance
+bot_instance = None
+def get_bot():
+    global bot_instance
+    if not bot_instance and BOT_TOKEN:
+        bot_instance = telegram.Bot(token=BOT_TOKEN)
+    return bot_instance
 
 STARS_PRICING = {
     "starter": {"amount": 250, "label": "Starter Pack", "credits": 10, "premium_credits": 0},
     "creator": {"amount": 1500, "label": "Creator Pack", "credits": 10, "premium_credits": 5},
-    "magician": {"amount": 2500, "label": "Magician Pack", "credits": 10, "premium_credits": 10}, # Updated to 2500 to match high value perception or keep 1500? User UI said 1500 for both. Let's trust UI or fix it. UI said 1500 for Magician too?
-    # Checking UI... UI says 1500 for Magician. I will stick to UI values but usually tiered.
-    # Wait, UI had Creator=1500 and Magician=1500. Let's default to UI but add fallback.
+    "magician": {"amount": 2500, "label": "Magician Pack", "credits": 10, "premium_credits": 10}, 
 }
 
 @app.post("/api/payment/create-invoice")
@@ -457,14 +465,21 @@ async def create_invoice(
     }
 
     try:
-        res = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/createInvoiceLink", json=payload)
-        res_data = res.json()
-        
-        if not res_data.get("ok"):
-            print(f"❌ Invoice Error: {res_data}")
-            raise HTTPException(status_code=500, detail=res_data.get("description", "Telegram API Error"))
-            
-        return {"invoice_link": res_data["result"]}
+        # Use Bot API directly or via library. Library is better for consistency but createInvoiceLink is simple.
+        # Let's use the library since we are adding it.
+        bot = get_bot()
+        if not bot:
+             raise Exception("Bot token not configured")
+             
+        link = await bot.create_invoice_link(
+             title=payload["title"],
+             description=payload["description"],
+             payload=payload["payload"],
+             provider_token=payload["provider_token"],
+             currency=payload["currency"],
+             prices=[telegram.LabeledPrice(plan["label"], plan["amount"])]
+        )
+        return {"invoice_link": link}
 
     except Exception as e:
         print(f"❌ Payment Init Failed: {e}")
@@ -476,31 +491,33 @@ async def telegram_webhook(request: Request):
     Handle Telegram Updates (Pre-checkout & Success)
     """
     try:
-        update = await request.json()
-        print(f"📥 Webhook Update: {json.dumps(update)[:200]}...") # Log start of update
-    except Exception as e:
-        print(f"❌ Webhook JSON Error: {e}")
-        return {"ok": True} # Ignore invalid JSON
+        update_json = await request.json()
+        # print(f"📥 Webhook Update: {json.dumps(update_json)[:200]}...") 
         
-    try:
+        # Manually parse or use library? Library update object is complex to construct from dict async.
+        # We will iterate manually but use Bot methods for actions.
+        
         # 1. Pre-Checkout Query (Must answer ok=True within 10s)
-        if "pre_checkout_query" in update:
-            pcq = update["pre_checkout_query"]
+        if "pre_checkout_query" in update_json:
+            pcq = update_json["pre_checkout_query"]
             pcq_id = pcq["id"]
             
-            print(f"💳 Pre-Checkout: {pcq_id}. Token starts with: {BOT_TOKEN[:5] if BOT_TOKEN else 'NONE'}")
-            
             # Auto-accept
-            res = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerPreCheckoutQuery", json={
-                "pre_checkout_query_id": pcq_id,
-                "ok": True
-            })
-            print(f"📤 Answer Pre-Checkout: {res.status_code} {res.text}")
+            try:
+                bot = get_bot()
+                if bot:
+                    await bot.answer_pre_checkout_query(pre_checkout_query_id=pcq_id, ok=True)
+                    print(f"✅ Answered Pre-Checkout: {pcq_id}")
+                else:
+                    print("❌ Bot not init for Pre-Checkout")
+            except Exception as e:
+                print(f"❌ Failed to Answer Pre-Checkout: {e}")
+                
             return {"ok": True}
 
         # 2. Successful Payment
-        if "message" in update and "successful_payment" in update["message"]:
-            msg = update["message"]
+        if "message" in update_json and "successful_payment" in update_json["message"]:
+            msg = update_json["message"]
             pay_info = msg["successful_payment"]
             
             # Payload format: "user_id:plan_id"
@@ -510,7 +527,11 @@ async def telegram_webhook(request: Request):
                 return {"ok": True}
                 
             user_id_str, plan_id = invoice_payload.split(":", 1)
-            user_id = int(user_id_str)
+            try:
+                user_id = int(user_id_str)
+            except:
+                print(f"❌ Invalid User ID in payload: {user_id_str}")
+                return {"ok": True}
             
             print(f"💰 PAYMENT SUCCESS: User {user_id} bought {plan_id}")
             
@@ -553,7 +574,6 @@ async def telegram_webhook(request: Request):
 
     except Exception as e:
         print(f"❌ Webhook Processing Error: {e}")
-        # Return OK to prevent Telegram from retrying indefinitely
         return {"ok": True}
 
     return {"ok": True}
