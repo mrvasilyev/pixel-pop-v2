@@ -632,7 +632,7 @@ body {
     left: 0;
     right: 0;
     /* Respect Safe Area (Notch/Dynamic Island) + spacing */
-    padding: calc(16px + env(safe-area-inset-top)) 16px 16px 16px;
+    padding: calc(60px + env(safe-area-inset-top)) 16px 16px 16px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
