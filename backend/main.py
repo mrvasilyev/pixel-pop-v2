@@ -12,6 +12,9 @@ if os.path.exists(dotenv_local_path):
     print(f"Loading local env from {dotenv_local_path}")
     load_dotenv(dotenv_path=dotenv_local_path, override=True)
 
+# Fix for ModuleNotFoundError when running from root (uvicorn backend.main:app)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from auth import validate_telegram_data, create_jwt_token, verify_jwt_token, get_or_create_user
 from job_manager import JobManager
 from worker import worker_loop
