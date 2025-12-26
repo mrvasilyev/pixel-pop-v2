@@ -437,9 +437,9 @@ def get_bot():
     return bot_instance
 
 STARS_PRICING = {
-    "starter": {"amount": 250, "label": "Starter Pack", "credits": 10, "premium_credits": 0},
-    "creator": {"amount": 1500, "label": "Creator Pack", "credits": 10, "premium_credits": 5},
-    "magician": {"amount": 2500, "label": "Magician Pack", "credits": 10, "premium_credits": 10}, 
+    "starter": {"amount": 75, "label": "Starter Pack", "credits": 5, "premium_credits": 0},
+    "creator": {"amount": 250, "label": "Creator Pack", "credits": 15, "premium_credits": 5},
+    "magician": {"amount": 750, "label": "Magician Pack", "credits": 40, "premium_credits": 15}, 
 }
 
 @app.post("/api/payment/create-invoice")
