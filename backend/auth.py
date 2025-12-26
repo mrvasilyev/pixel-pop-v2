@@ -7,25 +7,18 @@ from urllib.parse import parse_qsl
 import jwt
 from fastapi import HTTPException, Header
 
-# Test User ID from user request
-MOCK_USER_ID = 51576055
-
 def validate_telegram_data(init_data: str, bot_token: str) -> dict:
     """
     Validates the Telegram WebApp initData.
     Returns the user dict if valid, raises HTTPException otherwise.
     """
     if not bot_token:
-        # Mock mode if no token provided
-        print("⚠️ No BOT_TOKEN found. Using Mock Auth.")
-        # Parse the init data to try and find the test user, or just default to mock
-        try:
-            parsed = dict(parse_qsl(init_data))
-            if 'user' in parsed:
-                return json.loads(parsed['user'])
-        except:
-            pass
-        return {"id": MOCK_USER_ID, "first_name": "Test User"}
+        print("⚠️ No BOT_TOKEN provided to validate_telegram_data")
+        # In PROD/TEST, this should fail. Only in local dev with explicit mock hash should it pass.
+        # We previously fell back to a specific ID for everything, which caused the "incomplete customer info" bug.
+        # Now we return None or raise, forcing the caller to handle it or the mock hash check to pass.
+        pass # Flow continues to try parsing or eventually failing
+
 
     try:
         parsed_data = dict(parse_qsl(init_data))
