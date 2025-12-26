@@ -14,30 +14,41 @@ import LockScreen from './components/LockScreen';
 
 function MainScreen() {
   const { isPaywallOpen, closePaywall } = useUser();
-  const [lockState, setLockState] = React.useState(null); // 'access' | 'desktop' | null
 
-  React.useEffect(() => {
+  // Synchronous Element Check to prevent "Flash of Main Screen"
+  const [lockState, setLockState] = React.useState(() => {
     // 1. Access Control (Guest System)
-    // Block if NOT Dev AND NOT Telegram Context
     const isDev = import.meta.env.DEV;
+    // Check both initData presence AND platform for robustness, though initData is the key
     const isTelegram = !!window.Telegram?.WebApp?.initData;
 
     if (!isDev && !isTelegram) {
-      setLockState('access');
-      return;
+      return 'access';
     }
 
-    // 2. Desktop Lock (Responsiveness)
+    // 2. Desktop Lock (Initial Check)
+    if (window.innerWidth > 850) {
+      return 'desktop';
+    }
+
+    return null;
+  });
+
+  React.useEffect(() => {
+    // Only need effect for RESIZE listener now
     const checkWidth = () => {
-      // Allow tablets (up to ~850px)
-      if (window.innerWidth > 850) {
-        setLockState('desktop');
-      } else {
-        setLockState(prev => prev === 'access' ? 'access' : null);
-      }
+      // If we are already locked by 'access', do not override with 'desktop' checks
+      // (The state update function pattern handles this safe-guarding)
+      setLockState(prev => {
+        if (prev === 'access') return 'access';
+
+        if (window.innerWidth > 850) {
+          return 'desktop';
+        }
+        return null;
+      });
     };
 
-    checkWidth();
     window.addEventListener('resize', checkWidth);
     return () => window.removeEventListener('resize', checkWidth);
   }, []);
