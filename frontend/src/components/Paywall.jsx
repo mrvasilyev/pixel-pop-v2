@@ -107,8 +107,6 @@ const Paywall = ({ isOpen, onClose }) => {
             const token = await login();
             if (!token) return;
 
-            if (!token) return;
-
             // 1. Create Invoice Link via Backend
             const response = await fetch(`${API_BASE}/api/payment/create-invoice`, {
                 method: 'POST',
@@ -120,17 +118,22 @@ const Paywall = ({ isOpen, onClose }) => {
             });
 
             if (!response.ok) {
-                console.error("Invoice creation failed", await response.text());
-                alert("Could not initialize payment. Please try again.");
+                const errText = await response.text();
+                alert("Server Error: " + errText); // DEBUG
+                console.error("Invoice creation failed", errText);
                 return;
             }
 
             const data = await response.json();
             const invoiceUrl = data.invoice_link;
 
+            // alert("Invoice Link: " + invoiceUrl.slice(0, 15) + "..."); // DEBUG
+
             // 2. Open Invoice in Telegram
             if (window.Telegram?.WebApp?.openInvoice) {
+                // alert("Opening Invoice..."); // DEBUG
                 window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
+                    // alert("Invoice Status: " + status); // DEBUG
                     if (status === 'paid') {
                         console.log("Payment successful!");
                         onClose();
@@ -145,7 +148,8 @@ const Paywall = ({ isOpen, onClose }) => {
                     }
                 });
             } else {
-                // Fallback (e.g. open link if independent, though Stars usually requires WebApp context)
+                // Fallback
+                alert("WebApp.openInvoice missing. Fallback to browser."); // DEBUG
                 window.open(invoiceUrl, '_blank');
             }
 
@@ -185,8 +189,6 @@ const Paywall = ({ isOpen, onClose }) => {
                                     BEST CHOICE
                                 </div>
                             )}
-
-
 
                             <div className="plan-name">{plan.name}</div>
                             <div className="plan-stars">
