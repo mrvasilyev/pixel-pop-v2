@@ -10,9 +10,42 @@ const Admin = React.lazy(() => import('./Admin'));
 
 import Paywall from './components/Paywall';
 import { useUser } from './context/UserContext';
+import LockScreen from './components/LockScreen';
 
 function MainScreen() {
   const { isPaywallOpen, closePaywall } = useUser();
+  const [lockState, setLockState] = React.useState(null); // 'access' | 'desktop' | null
+
+  React.useEffect(() => {
+    // 1. Access Control (Guest System)
+    // Block if NOT Dev AND NOT Telegram Context
+    const isDev = import.meta.env.DEV;
+    const isTelegram = !!window.Telegram?.WebApp?.initData;
+
+    if (!isDev && !isTelegram) {
+      setLockState('access');
+      return;
+    }
+
+    // 2. Desktop Lock (Responsiveness)
+    const checkWidth = () => {
+      // Allow tablets (up to ~850px)
+      if (window.innerWidth > 850) {
+        setLockState('desktop');
+      } else {
+        setLockState(prev => prev === 'access' ? 'access' : null);
+      }
+    };
+
+    checkWidth();
+    window.addEventListener('resize', checkWidth);
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
+
+  if (lockState) {
+    return <LockScreen type={lockState} />;
+  }
+
   return (
     <div className="main-screen">
       <Header />
