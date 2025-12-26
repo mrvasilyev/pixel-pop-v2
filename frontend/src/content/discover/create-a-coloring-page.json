@@ -1,8 +1,8 @@
 {
-  "title": "Create a coloring page",
-  "cover": "/images/discover/create-a-coloring-page.jpg",
-  "prompt": "",
-  "order": 2,
-  "content": {},
-  "hasPrompt": false
+    "title": "Create a coloring page",
+    "cover": "/images/discover/create-a-coloring-page/cover.webp",
+    "prompt": "Clean black and white coloring page line art, high contrast, detailed outlines, no shading, kids friendly cute style.",
+    "order": 2,
+    "content": {},
+    "hasPrompt": true
 }

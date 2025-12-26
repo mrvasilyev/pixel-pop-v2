@@ -1,8 +1,8 @@
 {
-  "title": "Create a professional job photo",
-  "cover": "/images/discover/create-a-professional-job-photo.jpg",
-  "prompt": "",
-  "order": 11,
-  "content": {},
-  "hasPrompt": false
+    "title": "Create a professional job photo",
+    "cover": "/images/discover/create-a-professional-job-photo/cover.webp",
+    "prompt": "Professional corporate headshot, confident expression, neutral background, high quality lighting, business attire, 8k resolution, photorealistic.",
+    "order": 11,
+    "content": {},
+    "hasPrompt": true
 }

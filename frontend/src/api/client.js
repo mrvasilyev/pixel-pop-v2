@@ -1,5 +1,10 @@
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Allow dynamic API targeting via Env Var (e.g. for Vercel Preview -> Railway Test)
+// If not set, defaults to '' which uses relative paths (handled by Vite proxy locally)
+// If not set, default to Railway Test Backend (Direct) to bypass Vercel Proxy issues
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://pixelpop-test.up.railway.app';
+
 // Mock Telegram initData for dev if missing
 const getTelegramInitData = () => {
   if (window.Telegram?.WebApp?.initData) {
@@ -15,7 +20,7 @@ export async function login() {
   if (accessToken) return accessToken;
   
   const initData = getTelegramInitData();
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ initData })
@@ -27,12 +32,27 @@ export async function login() {
   return accessToken;
 }
 
+export const getUser = async () => {
+    try {
+        const token = await login();
+        const res = await fetch(`${API_BASE}/api/user/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to fetch user');
+        return await res.json();
+    } catch (error) {
+        console.error("Get user failed:", error);
+        return null;
+    }
+};
+
 export const generateImage = async (prompt, styleId, slug, extraConfig = {}) => {
   try {
     const token = await login();
     
     // 1. Enqueue Job
-    const res = await fetch('/api/generation', {
+    const res = await fetch(`${API_BASE}/api/generation`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +88,7 @@ export const generateImage = async (prompt, styleId, slug, extraConfig = {}) => 
       attempts++;
       await delay(1000); // Wait 1s
       
-      const statusRes = await fetch(`/api/generation/${job_id}`, {
+      const statusRes = await fetch(`${API_BASE}/api/generation/${job_id}`, {
          headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -103,7 +123,7 @@ export const uploadImage = async (file) => {
         const formData = new FormData();
         formData.append('file', file);
         
-        const res = await fetch('/api/upload', {
+        const res = await fetch(`${API_BASE}/api/upload`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -125,7 +145,7 @@ export const uploadImage = async (file) => {
 export const fetchGenerations = async () => {
     try {
         const token = await login();
-        const res = await fetch('/api/generations', {
+        const res = await fetch(`${API_BASE}/api/generations`, {
              headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -136,3 +156,4 @@ export const fetchGenerations = async () => {
         return [];
     }
 };
+

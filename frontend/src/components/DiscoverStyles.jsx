@@ -3,6 +3,7 @@ import './MainScreen.css';
 
 import { usePhotoAction } from '../hooks/usePhotoAction';
 import { useGeneration } from '../context/GenerationContext';
+import { useUser } from '../context/UserContext';
 import { generateImage, uploadImage } from '../api/client';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -17,10 +18,25 @@ const DiscoverStyles = () => {
     const pendingItemRef = React.useRef(null);
     const queryClient = useQueryClient();
     const { startGeneration, stopGeneration } = useGeneration();
+    const { user, openPaywall, isPremiumMode } = useUser();
 
     const handlePhotoSelected = async (file) => {
         const item = pendingItemRef.current;
         if (!item) return;
+
+        // CHECK CREDITS based on Quality Mode
+        if (isPremiumMode) {
+            if (!user || (user.premium_credits || 0) < 1) {
+                openPaywall();
+                return;
+            }
+        } else {
+            // Standard Mode
+            if (!user || (user.credits || 0) < 1) {
+                openPaywall();
+                return;
+            }
+        }
 
         try {
             console.log("Processing discover item:", item.title);
@@ -40,7 +56,10 @@ const DiscoverStyles = () => {
             // Discover items might just be titles/images, assume prompt is title for now
             const prompt = item.prompt || `A photo in ${item.title} style`;
             // Use item.slug for true CMS tracking
-            await generateImage(prompt, item.title, item.slug || 'discover-style', { init_image: url });
+            await generateImage(prompt, item.title, item.slug || 'discover-style', {
+                init_image: url,
+                quality: isPremiumMode ? 'high' : 'standard'
+            });
 
             // 3. Refresh Gallery
             await queryClient.invalidateQueries({ queryKey: ['gallery'] });
@@ -57,21 +76,43 @@ const DiscoverStyles = () => {
         }
     };
 
-    const { triggerPhotoAction, PhotoInputs } = usePhotoAction({ onPhotoSelected: handlePhotoSelected });
+    const { triggerPhotoAction, actionSheetUI } = usePhotoAction({ onPhotoSelected: handlePhotoSelected });
 
     const handleItemClick = (item) => {
+        // Pre-check credits before opening dialog? 
+        // Or wait until send? Let's check here to avoid "Action Sheet" if no credits.
+        if (isPremiumMode) {
+            if (!user || (user.premium_credits || 0) < 1) {
+                openPaywall();
+                return;
+            }
+        } else {
+            if (!user || (user.credits || 0) < 1) {
+                openPaywall();
+                return;
+            }
+        }
         pendingItemRef.current = item;
-        triggerPhotoAction(item.title);
+        triggerPhotoAction({
+            title: item.title,
+            subtitle: "Choose a photo to get started"
+        });
     };
 
     return (
         <div className="section-container">
-            <PhotoInputs />
+            {actionSheetUI}
             <div className="section-header">Discover something new</div>
             <div className="discover-grid-container">
                 {discoverItems.map((item, i) => (
                     <div key={i} className="discover-card" onClick={() => handleItemClick(item)}>
-                        <img className="discover-img" src={`${import.meta.env.BASE_URL}${item.cover?.replace(/^\//, '')}` || 'https://placehold.co/48x48'} alt="icon" />
+                        <img
+                            className="discover-img"
+                            src={`${import.meta.env.BASE_URL}${item.cover?.replace(/^\//, '')}` || 'https://placehold.co/48x48'}
+                            alt={item.title || "Style preview"}
+                            loading="lazy"
+                            decoding="async"
+                        />
                         <div className="discover-text">{item.title}</div>
                     </div>
                 ))}

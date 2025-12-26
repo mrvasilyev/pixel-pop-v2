@@ -38,6 +38,7 @@ def validate_telegram_data(init_data: str, bot_token: str) -> dict:
     # DEV: Allow mock hash if explicitly sent (for local dev without real Telegram/Ngrok)
     if parsed_data["hash"] == "mock":
         print("⚠️  MOCK AUTH DETECTED - ALLOWING FOR DEV")
+        print(f"User Data: {parsed_data.get('user')}")
         return json.loads(parsed_data["user"])
 
     hash_check = parsed_data.pop("hash")
@@ -77,3 +78,49 @@ def verify_jwt_token(authorization: str = Header(...), secret: str = os.getenv("
     except jwt.InvalidTokenError as e:
         print(f"❌ Invalid Token: {e}")
         raise HTTPException(status_code=401, detail="Invalid token")
+
+def get_or_create_user(user_data: dict, supabase_client) -> dict:
+    """
+    Checks if user exists, creates if not.
+    If created, awards initial credits via Transaction (Trigger handles Balance).
+    """
+    user_id = user_data["id"]
+    try:
+        # 1. Check existence
+        # Uses count to avoid data transfer overhead
+        res = supabase_client.table("users").select("id", count="exact").eq("id", user_id).execute()
+        exists = res.count > 0
+        
+        if not exists:
+            print(f"🆕 Creating New User: {user_id}")
+            # 2. Insert User
+            new_user = {
+                "id": user_id,
+                "username": user_data.get("username"),
+                "first_name": user_data.get("first_name"),
+                "last_name": user_data.get("last_name"),
+                "language_code": user_data.get("language_code"),
+                "is_premium": user_data.get("is_premium", False)
+            }
+            supabase_client.table("users").insert(new_user).execute()
+            
+            # 3. Grant Initial Gift (3 Credits, Medium Tier)
+            # Trigger 'on_transaction_created' will update user_balances automatically.
+            gift_transaction = {
+                "user_id": user_id,
+                "transaction_type": "GIFT",
+                "amount": 0.0,
+                "credits_change": 3,
+                "description": "Welcome Gift",
+                "reference_id": f"gift_{user_id}_init" # Idempotency Key
+            }
+            supabase_client.table("user_transactions").insert(gift_transaction).execute()
+            print(f"🎁 Initial Gift Granted for {user_id}")
+            
+        return user_data
+
+    except Exception as e:
+        print(f"❌ User Creation Failed: {e}")
+        # Non-blocking for login, but critical for functionality
+        # We might return user_data anyway or raise
+        raise e

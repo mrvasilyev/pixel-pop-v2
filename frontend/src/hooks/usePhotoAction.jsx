@@ -1,49 +1,36 @@
-import { useCallback, useRef } from 'react';
+import ActionSheet from '../components/ActionSheet.jsx';
+console.log('[Debug] ActionSheet Import:', ActionSheet);
+import React, { useState, useRef, useCallback } from 'react';
 
 /**
- * Hook to handle photo selection via Native/Telegram UI
+ * Hook to handle photo selection via Custom Telegram-style Action Sheet (2025 UI)
  * Returns:
- * - triggerPhotoAction(title): Function to open the dialog
- * - PhotoInputs: Component to render hidden inputs (must be rendered in the parent)
+ * - triggerPhotoAction(title): Function to open the Action Sheet
+ * - PhotoInputs: Component to render hidden inputs AND the Action Sheet (must be rendered in the parent)
  */
 export const usePhotoAction = (options = {}) => {
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [sheetTitle, setSheetTitle] = useState('');
 
     const triggerPhotoAction = useCallback((title) => {
-        const webApp = window.Telegram?.WebApp;
-
-        const fallback = () => {
-            console.warn('Telegram WebApp not detected or showPopup not supported, using fallback confirm');
-            // Fallback: Directly open the file picker (which usually offers Camera option on mobile)
-            fileInputRef.current?.click();
+        // Support simple string or object { title, subtitle }
+        const config = typeof title === 'object' ? title : {
+            title: title || 'Choose Action',
+            subtitle: 'Choose a photo to get started'
         };
-
-        if (webApp && webApp.showPopup && typeof webApp.isVersionAtLeast === 'function' && webApp.isVersionAtLeast('6.2')) {
-            try {
-                webApp.showPopup({
-                    title: title || 'Choose Action',
-                    message: 'Choose a photo to get started.',
-                    buttons: [
-                        { id: 'gallery', type: 'default', text: 'Choose a photo' },
-                        { id: 'camera', type: 'default', text: 'Take a selfie' },
-                        { id: 'cancel', type: 'cancel' }
-                    ]
-                }, (buttonId) => {
-                    if (buttonId === 'gallery') {
-                        fileInputRef.current?.click();
-                    } else if (buttonId === 'camera') {
-                        cameraInputRef.current?.click();
-                    }
-                });
-            } catch (e) {
-                console.error("WebApp.showPopup failed:", e);
-                fallback();
-            }
-        } else {
-            fallback();
-        }
+        setSheetTitle(config);
+        setIsSheetOpen(true);
     }, []);
+
+    const handleAction = (actionId) => {
+        if (actionId === 'gallery') {
+            fileInputRef.current?.click();
+        } else if (actionId === 'camera') {
+            cameraInputRef.current?.click();
+        }
+    };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -57,12 +44,13 @@ export const usePhotoAction = (options = {}) => {
         }
     };
 
-    const PhotoInputs = () => (
+    const actionSheetUI = (
         <>
             <input
                 type="file"
                 ref={fileInputRef}
-                accept="image/*"
+                // Try specific types to encourage library on some Androids/iOS versions, though iOS menu is persistent
+                accept="image/png, image/jpeg, image/heic, image/webp"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
             />
@@ -74,8 +62,14 @@ export const usePhotoAction = (options = {}) => {
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
             />
+            <ActionSheet
+                isOpen={isSheetOpen}
+                onClose={() => setIsSheetOpen(false)}
+                onAction={handleAction}
+                title={sheetTitle}
+            />
         </>
     );
 
-    return { triggerPhotoAction, PhotoInputs };
+    return { triggerPhotoAction, actionSheetUI };
 };

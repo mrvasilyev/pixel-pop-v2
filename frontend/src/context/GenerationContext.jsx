@@ -16,11 +16,16 @@ export const GenerationProvider = ({ children }) => {
 
     const startGeneration = (preview = null) => {
         setPreviewUrl(preview);
+        const phrases = headerData.loadingPhrases || ["Loading"];
+        const wordIndex = Math.floor(Math.random() * phrases.length);
+        setLoadingWord(phrases[wordIndex]);
         setIsGenerating(true);
     };
 
     const stopGeneration = () => {
         setIsGenerating(false);
+        setLoadingWord("Loading");
+        setDots("");
         // Keep previewUrl briefly if needed for transition, but usually clear it
         // setPreviewUrl(null); // Cleared in useEffect or next start
     };
@@ -28,21 +33,24 @@ export const GenerationProvider = ({ children }) => {
     // Effect to cycle words and animate dots
     useEffect(() => {
         if (!isGenerating) {
-            setLoadingWord("Loading");
-            setDots("");
-            if (wordIntervalRef.current) clearInterval(wordIntervalRef.current);
-            if (dotIntervalRef.current) clearInterval(dotIntervalRef.current);
             return;
         }
 
-        // 1. Pick random word initially and cycle every 3s
+        // 1. Cycle every 3s
         const phrases = headerData.loadingPhrases || ["Loading"];
-        let wordIndex = Math.floor(Math.random() * phrases.length);
-        setLoadingWord(phrases[wordIndex]);
+        // We use a local variable for the interval closure, but to persist cross-renders if effect re-runs (it shouldn't if deps are stable),
+        // we might want a ref. But here we just start a new interval.
+        // We can pick a random start or 0.
+        let localWordIndex = Math.floor(Math.random() * phrases.length);
+
+        // Update immediately to sync -> NO, this causes lint error.
+        // The initial word is already set in startGeneration.
+        // We just need to ensure the interval continues from there or picks a new one.
+        // Let's just start the interval.
 
         wordIntervalRef.current = setInterval(() => {
-            wordIndex = (wordIndex + 1) % phrases.length;
-            setLoadingWord(phrases[wordIndex]);
+            localWordIndex = (localWordIndex + 1) % phrases.length;
+            setLoadingWord(phrases[localWordIndex]);
         }, 3000);
 
         // 2. Animate dots every 500ms
@@ -72,6 +80,7 @@ export const GenerationProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useGeneration = () => {
     const context = useContext(GenerationContext);
     if (!context) {

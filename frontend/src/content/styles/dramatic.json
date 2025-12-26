@@ -1,7 +1,7 @@
 {
-  "title": "Dramatic",
-  "cover": "/images/styles/dramatic/cover.png",
-  "prompt": "Create a dramatic black-and-white headshot of the subject or subjects with a moody, cinematic atmosphere. Use high-contrast lighting that carves out the face with deep shadows and bright highlights. Make the subject appear wet, as if the subject has just been caught in the rain, with irregular water droplets and streaks across the cheeks, forehead, and jawline. Hair should look damp and slightly clumped, with a few strands falling naturally across the face. Keep the background dark and minimal so the illuminated features and droplets stand out. The overall look should feel intense, emotional, and photographic — a raw, expressive portrait with real rain texture and dramatic tonal depth.",
-  "order": 4,
-  "hasPrompt": true
+    "title": "Dramatic",
+    "cover": "/images/styles/dramatic/cover.webp",
+    "prompt": "Create a dramatic black-and-white headshot of the subject or subjects with a moody, cinematic atmosphere. Use high-contrast lighting that carves out the face with deep shadows and bright highlights. Make the subject appear wet, as if the subject has just been caught in the rain, with irregular water droplets and streaks across the cheeks, forehead, and jawline. Hair should look damp and slightly clumped, with a few strands falling naturally across the face. Keep the background dark and minimal so the illuminated features and droplets stand out. The overall look should feel intense, emotional, and photographic \u2014 a raw, expressive portrait with real rain texture and dramatic tonal depth.",
+    "order": 4,
+    "hasPrompt": true
 }

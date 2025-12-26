@@ -1,0 +1,123 @@
+/* ActionSheet.css */
+.action-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    animation: fade-in-overlay 0.3s ease-out forwards;
+}
+
+.action-sheet-overlay.closing {
+    animation: fade-out-overlay 0.3s ease-in forwards;
+}
+
+.action-sheet-container {
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 20px));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: slide-up-sheet 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.action-sheet-overlay.closing .action-sheet-container {
+    animation: slide-down-sheet 0.3s ease-in forwards;
+}
+
+.action-group {
+    background: rgba(30, 30, 30, 0.85);
+    /* Dark semi-transparent */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.action-button {
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 16px;
+    font-size: 17px;
+    /* iOS standard size */
+    color: #007aff;
+    /* iOS blue */
+    font-weight: 400;
+    cursor: pointer;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.15);
+    transition: background 0.2s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.action-button:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.action-button:last-child {
+    border-bottom: none;
+}
+
+.action-button.cancel {
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 14px;
+    font-weight: 600;
+    margin-top: 0;
+    /* Gap handled by container gap */
+    color: #007aff;
+}
+
+.action-button.destructive {
+    color: #ff3b30;
+}
+
+/* Icons or text alignment */
+.action-button {
+    text-align: center;
+}
+
+/* Animations */
+@keyframes fade-in-overlay {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-out-overlay {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slide-up-sheet {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-down-sheet {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(100%);
+    }
+}

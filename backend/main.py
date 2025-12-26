@@ -3,11 +3,7 @@ import sys
 from fastapi import FastAPI, HTTPException, Request, Depends, Header, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from auth import validate_telegram_data, create_jwt_token, verify_jwt_token
-from job_manager import JobManager
-
-# Load .env
-# Load .env
+# Load .env FIRST
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', '.env')
 load_dotenv(dotenv_path=dotenv_path)
 
@@ -15,6 +11,14 @@ dotenv_local_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fr
 if os.path.exists(dotenv_local_path):
     print(f"Loading local env from {dotenv_local_path}")
     load_dotenv(dotenv_path=dotenv_local_path, override=True)
+
+# Fix for ModuleNotFoundError when running from root (uvicorn backend.main:app)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from auth import validate_telegram_data, create_jwt_token, verify_jwt_token, get_or_create_user
+from job_manager import JobManager
+from worker import worker_loop
+import asyncio
 
 app = FastAPI()
 
@@ -27,9 +31,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from worker import worker_loop
-import asyncio
-
 # Initialize Job Manager (Global)
 job_manager = JobManager()
 JWT_SECRET = os.getenv("JWT_SECRET", "super-secret-key-change-me")
@@ -39,6 +40,18 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 async def startup_event():
     print("🚀 Starting Background Worker...")
     asyncio.create_task(worker_loop(job_manager))
+
+# Initialize Supabase
+from supabase import create_client, Client
+SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("VITE_SUPABASE_KEY") or os.getenv("VITE_SUPABASE_ANON_KEY")
+
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print(f"⚠️ Failed to init Supabase in Main: {e}")
 
 @app.post("/api/auth/login")
 async def login(request: Request):
@@ -54,6 +67,15 @@ async def login(request: Request):
     # Validate Telegram Signature
     user = validate_telegram_data(init_data, BOT_TOKEN)
     
+    # Sync with DB (Create if new + Gift)
+    if supabase:
+        try:
+            get_or_create_user(user, supabase)
+        except Exception as e:
+            print(f"⚠️ DB Sync Failed: {e}")
+            # Decide if block login or allow? Allow for robustness, but log error.
+            # If DB is down, user can still login via JWT but can't generate?
+    
     # Issue JWT
     token = create_jwt_token(user["id"], JWT_SECRET)
     
@@ -62,6 +84,94 @@ async def login(request: Request):
         "token_type": "bearer",
         "user": user
     }
+
+@app.get("/api/user/me")
+async def get_current_user(authorization: str = Header(...)):
+    # Force Redeploy
+    """
+    Get current user profile and balance.
+    """
+    user_id = verify_jwt_token(authorization, JWT_SECRET)
+    
+    # Import locally to avoid issues
+    from worker import supabase
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+        
+    try:
+        # Fetch balance
+        res = supabase.table("user_balances").select("*").eq("user_id", user_id).execute()
+        balance_data = res.data[0] if res.data else {"credits": 0, "balance": 0.0}
+        
+        # User details (optional, client might have them, but good to refresh)
+        user_res = supabase.table("users").select("*").eq("id", user_id).execute()
+        user_data = user_res.data[0] if user_res.data else {}
+        
+        return {
+            "id": user_id,
+            "credits": balance_data.get("credits", 0),
+            "premium_credits": balance_data.get("premium_credits", 0),
+            "balance": balance_data.get("balance", 0.0),
+            "username": user_data.get("username"),
+            "first_name": user_data.get("first_name"),
+            "is_premium": user_data.get("is_premium", False)
+        }
+    except Exception as e:
+        print(f"❌ Get User Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/debug/purchase")
+async def debug_purchase(
+    request: Request,
+    authorization: str = Header(...)
+):
+    """
+    DEBUG: Simulates a purchase by directly adding credits.
+    """
+    user_id = verify_jwt_token(authorization, JWT_SECRET)
+    
+    body = await request.json()
+    plan_id = body.get("plan_id")
+    basic_credits = body.get("basic_credits", 0)
+    premium_credits = body.get("premium_credits", 0)
+    
+    # Import locally
+    from worker import supabase
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    print(f"💰 DEBUG PURCHASE: User {user_id} bought {plan_id} (+{basic_credits} basic, +{premium_credits} prem)")
+    
+    try:
+        # Get current balance
+        res = supabase.table("user_balances").select("*").eq("user_id", user_id).execute()
+        
+        current_basic = 0
+        current_prem = 0
+        
+        if res.data:
+            current_basic = res.data[0].get("credits", 0)
+            current_prem = res.data[0].get("premium_credits", 0)
+            
+            # Update
+            supabase.table("user_balances").update({
+                "credits": current_basic + basic_credits,
+                "premium_credits": current_prem + premium_credits
+            }).eq("user_id", user_id).execute()
+        else:
+            # Create
+            supabase.table("user_balances").insert({
+                "user_id": user_id,
+                "credits": basic_credits,
+                "premium_credits": premium_credits,
+                "balance": 0.0
+            }).execute()
+            
+        return {"status": "success", "message": f"Added {basic_credits} basic and {premium_credits} premium credits"}
+        
+    except Exception as e:
+        print(f"❌ Debug Purchase Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generation", status_code=202)
 async def create_generation_job(
@@ -81,7 +191,41 @@ async def create_generation_job(
     
     print(f"📥 Job Request from User {user_id}: {prompt[:30]}...")
 
-    # 3. Enqueue Job
+    # 3. Check Balance & Determine Watermark
+    # Import locally to use supabase
+    from worker import supabase
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+    
+    # Get current balance
+    bal_res = supabase.table("user_balances").select("credits, premium_credits").eq("user_id", user_id).execute()
+    if not bal_res.data:
+         raise HTTPException(status_code=403, detail="User balance not found")
+    
+    balance = bal_res.data[0]
+    basic_creds = balance.get("credits", 0)
+    prem_creds = balance.get("premium_credits", 0)
+
+    quality = model_config.get("quality", "standard")
+    should_watermark = True
+
+    if quality == "high":
+        # Check Premium Credits
+        if prem_creds < 1:
+             raise HTTPException(status_code=402, detail="Insufficient Premium Credits. Please upgrade your plan.")
+        should_watermark = False
+    else:
+        # Check Basic Credits
+        if basic_creds < 1:
+             raise HTTPException(status_code=402, detail="Insufficient Basic Credits. Please top up.")
+        should_watermark = True
+
+    # 4. Enqueue Job
+    # We pass should_watermark to the worker via model_config or top-level job args?
+    # JobManager enqueue accepts model_config. Let's put it there for now or separate.
+    # JobManager.enqueue_job just stores the dict. We can add it to model_config.
+    model_config["should_watermark"] = should_watermark
+    
     job_id = await job_manager.enqueue_job(prompt, model_config, user_id)
     
     return {
@@ -243,12 +387,19 @@ async def upload_file(
     """
     user_id = verify_jwt_token(authorization, JWT_SECRET)
     
-    # Import s3 config from worker
-    from worker import s3_client, BUCKET_NAME
+    # Import locally
+    import boto3
     import time
+    from io import BytesIO
     
-    if not s3_client:
-        raise HTTPException(status_code=500, detail="S3 Client not initialized")
+    # Use explicit env vars to ensure correctness
+    aws_key = os.getenv("AWS_ACCESS_KEY_ID")
+    aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
+    aws_region = os.getenv("AWS_REGION", "us-east-1")
+    bucket_name = os.getenv("AWS_BUCKET_NAME", "pixelpop")
+    
+    if not aws_key or not aws_secret:
+        raise HTTPException(status_code=500, detail="S3 Credentials missing on server")
 
     try:
         # 1. Read file
@@ -258,22 +409,42 @@ async def upload_file(
         filename = file.filename or f"upload_{int(time.time())}.png"
         s3_key = f"uploads/{user_id}/{int(time.time())}_{filename}"
         
-        # 3. Upload
-        print(f"⬆️ Uploading User File to S3: {s3_key}")
-        from io import BytesIO
-        s3_client.upload_fileobj(
-            BytesIO(contents), 
-            BUCKET_NAME, 
-            s3_key, 
-            ExtraArgs={'ContentType': file.content_type or 'image/png'}
+        # 3. Create Client Locally (Thread-safe)
+        s3 = boto3.client(
+            's3',
+            aws_access_key_id=aws_key,
+            aws_secret_access_key=aws_secret,
+            region_name=aws_region
+        )
+
+        print(f"⬆️ Uploading User File to S3 ({bucket_name}): {s3_key}")
+        
+        # 4. Upload (Run in Executor to verify blocking behavior)
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None, 
+            lambda: s3.upload_fileobj(
+                BytesIO(contents), 
+                bucket_name, 
+                s3_key, 
+                ExtraArgs={'ContentType': file.content_type or 'image/png'}
+            )
         )
         
-        # 4. Return URL
-        public_url = f"https://{BUCKET_NAME}.s3.amazonaws.com/{s3_key}"
+        # 5. Return URL
+        public_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
         return {"url": public_url}
 
     except Exception as e:
-        print(f"❌ Upload Failed: {e}")
+        print(f"❌ Upload Failed Details: {str(e)}")
+        # Check connectivity
+        try:
+             import socket
+             ip = socket.gethostbyname(f"{bucket_name}.s3.amazonaws.com")
+             print(f"🔍 DNS Check: {bucket_name}.s3.amazonaws.com -> {ip}")
+        except Exception as dns_err:
+             print(f"❌ DNS Check Failed: {dns_err}")
+             
         raise HTTPException(status_code=500, detail=str(e))
 
 

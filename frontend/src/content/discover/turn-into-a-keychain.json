@@ -1,8 +1,8 @@
 {
-  "title": "Turn into a keychain",
-  "cover": "/images/discover/turn-into-a-keychain.png",
-  "prompt": "",
-  "order": 9,
-  "content": {},
-  "hasPrompt": false
+    "title": "Turn into a keychain",
+    "cover": "/images/discover/turn-into-a-keychain/cover.webp",
+    "prompt": "3D render of a cute keychain charm, glossy plastic texture, isolated on white background, merchandise product visualization.",
+    "order": 9,
+    "content": {},
+    "hasPrompt": true
 }

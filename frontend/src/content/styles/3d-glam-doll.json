@@ -1,7 +1,7 @@
 {
-  "title": "3D Glam Doll",
-  "cover": "/images/styles/3d-glam-doll/cover.png",
-  "prompt": "Create a hyper-stylized 3D floating head of a bratty, glamorous version of the subject with a bothered, unimpressed expression: half-lidded eyes, arched brows, and a subtle lip curl, delivering classic \"mean girl\" attitude. Their fair, porcelain-smooth skin has a glossy vinyl finish with strong highlighter on cheekbones and nose, catching soft studio light. Apply holographic, iridescent eyeshadow shifting from purple to teal with crisp specular glints. Style their thick hair in slick, glossy, sculpted waves or a sleek updo, reflecting light like polished acrylic. Add a small metallic chrome nose piercing (stud or hoop) with subtle brushed-metal reflections. The head floats isolated against a plain white neutral background, tilted 15 degrees, like a premium product render. Use bright, diffuse studio lighting with no harsh shadows, emphasizing gloss, plasticity, and subsurface scattering for realistic depth. Mood: bratty, fashionable, coolly detached. Camera angle: close-up portrait, straight-on. Lens: 85mm. Textures: ultra-smooth, high-gloss, cartoon-style plastic skin, lips, and hair.",
-  "order": 7,
-  "hasPrompt": true
+    "title": "3D Glam Doll",
+    "cover": "/images/styles/3d-glam-doll/cover.webp",
+    "prompt": "Create a hyper-stylized 3D floating head of a bratty, glamorous version of the subject with a bothered, unimpressed expression: half-lidded eyes, arched brows, and a subtle lip curl, delivering classic \"mean girl\" attitude. Their fair, porcelain-smooth skin has a glossy vinyl finish with strong highlighter on cheekbones and nose, catching soft studio light. Apply holographic, iridescent eyeshadow shifting from purple to teal with crisp specular glints. Style their thick hair in slick, glossy, sculpted waves or a sleek updo, reflecting light like polished acrylic. Add a small metallic chrome nose piercing (stud or hoop) with subtle brushed-metal reflections. The head floats isolated against a plain white neutral background, tilted 15 degrees, like a premium product render. Use bright, diffuse studio lighting with no harsh shadows, emphasizing gloss, plasticity, and subsurface scattering for realistic depth. Mood: bratty, fashionable, coolly detached. Camera angle: close-up portrait, straight-on. Lens: 85mm. Textures: ultra-smooth, high-gloss, cartoon-style plastic skin, lips, and hair.",
+    "order": 7,
+    "hasPrompt": true
 }

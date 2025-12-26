@@ -1,7 +1,7 @@
 {
-  "title": "Plushie",
-  "cover": "/images/styles/plushie/cover.jpg",
-  "prompt": "Transform the subject or image into an adorable plushie-style form with soft textures and rounded proportions. If a person is present, preserve recognizable traits; otherwise, reinterpret the object or animal as a cozy stuffed toy using felt or fleece textures. Give it a cozy felt or fleece texture, simplified shapes, and gentle embroidered details for the eyes, mouth, and features. Use a warm, pastel or neutral color palette with smooth shading and subtle seams, like a handcrafted stuffed toy. Keep the expression friendly and cute, with a slightly oversized head, short limbs, and a cuddly silhouette.The final image should feel like a charming, collectible plush toy — cozy, wholesome, and huggable, while still recognizable as the original subject.",
-  "order": 5,
-  "hasPrompt": true
+    "title": "Plushie",
+    "cover": "/images/styles/plushie/cover.webp",
+    "prompt": "Transform the subject or image into an adorable plushie-style form with soft textures and rounded proportions. If a person is present, preserve recognizable traits; otherwise, reinterpret the object or animal as a cozy stuffed toy using felt or fleece textures. Give it a cozy felt or fleece texture, simplified shapes, and gentle embroidered details for the eyes, mouth, and features. Use a warm, pastel or neutral color palette with smooth shading and subtle seams, like a handcrafted stuffed toy. Keep the expression friendly and cute, with a slightly oversized head, short limbs, and a cuddly silhouette.The final image should feel like a charming, collectible plush toy \u2014 cozy, wholesome, and huggable, while still recognizable as the original subject.",
+    "order": 5,
+    "hasPrompt": true
 }

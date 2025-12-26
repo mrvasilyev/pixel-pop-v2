@@ -277,7 +277,7 @@ body {
     /* Reduced padding since no bg */
     border-radius: 16px;
     color: #ffffff;
-    font-size: 13px;
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -340,7 +340,7 @@ body {
     right: 12px;
     background: transparent;
     border: none;
-    color: #888;
+    color: #cccccc;
     cursor: pointer;
 }
 
@@ -428,6 +428,7 @@ body {
     justify-content: center;
     box-shadow: 0 0 20px rgba(255, 1, 255, 0.5);
     font-family: inherit;
+    margin-bottom: 24px;
 }
 
 .lollipop-spinner {
@@ -622,4 +623,75 @@ body {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+/* Preview Modal Header */
+.preview-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 10001;
+    pointer-events: none;
+    /* Let clicks pass through empty areas */
+}
+
+/* Close Btn: Top Left */
+.preview-close-btn {
+    pointer-events: auto;
+    position: static;
+    /* Let flex handle it */
+    margin: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+}
+
+.preview-header-right {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.preview-pill-btn {
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.preview-pill-btn:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+}
+
+.preview-pill-btn.variant-dark {
+    background: rgba(28, 28, 30, 0.8);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-pill-btn.variant-light {
+    background: #ffffff;
+    color: #000000;
 }

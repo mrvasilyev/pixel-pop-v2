@@ -1,8 +1,8 @@
 {
-  "title": "Give us a matching outfit",
-  "cover": "/images/discover/give-us-a-matching-outfit.png",
-  "prompt": "",
-  "order": 13,
-  "content": {},
-  "hasPrompt": false
+    "title": "Give us a matching outfit",
+    "cover": "/images/discover/give-us-a-matching-outfit/cover.webp",
+    "prompt": "Fashion couple matching outfit, stylish coordinated look, street style photography, full body shot, trendy aesthetic.",
+    "order": 13,
+    "content": {},
+    "hasPrompt": true
 }
