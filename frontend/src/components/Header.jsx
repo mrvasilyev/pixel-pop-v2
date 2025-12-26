@@ -3,8 +3,9 @@ import './MainScreen.css';
 import { Star, Info, X, CircleX } from 'lucide-react';
 import headerData from '../content/header.json';
 
-// Mocking version/env for now as they are not directly available in v2 structure yet
-const version = "0.0.3";
+// Import version from package.json
+import pkg from '../../package.json';
+const version = pkg.version;
 
 import { useUser } from '../context/UserContext';
 import Paywall from './Paywall';
