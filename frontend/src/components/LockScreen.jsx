@@ -1,72 +1,54 @@
 import React from 'react';
-import { Smartphone, Lock } from 'lucide-react';
 
 const LockScreen = ({ type = "access" }) => {
-    const isDesktop = type === "desktop";
+    // Common UI for both "Guest" (Browser) and "Desktop" (Responsive) locks
+    // Both want the user to go to Telegram on Mobile.
 
     return (
         <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: '#0f0f0f',
-            color: 'white',
             display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px',
-            textAlign: 'center'
+            alignItems: 'center',
+            height: '100dvh',
+            background: '#0a0a0a',
+            color: '#ffffff',
+            flexDirection: 'column',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
         }}>
+            <img src="/logo.png" alt="Pixel Pop" style={{ width: '80px', marginBottom: '20px' }} />
+
+            <h2 style={{ marginBottom: '10px', fontSize: '24px', fontWeight: 'bold' }}>Almost there!</h2>
+
+            <p style={{ opacity: 0.7, marginBottom: '30px', fontSize: '16px' }}>
+                Open Telegram to use Pixel Pop.
+            </p>
+
             <div style={{
-                backgroundColor: '#1a1a1a',
-                padding: '3rem',
-                borderRadius: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '1.5rem',
-                maxWidth: '400px',
-                border: '1px solid #333'
+                background: '#ffffff',
+                padding: '10px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
             }}>
-                {isDesktop ? (
-                    <Smartphone size={64} color="#3b82f6" />
-                ) : (
-                    <Lock size={64} color="#ef4444" />
-                )}
-
-                <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600 }}>
-                    {isDesktop ? "Please Use Mobile" : "Access Restricted"}
-                </h2>
-
-                <p style={{ margin: 0, color: '#9ca3af', lineHeight: 1.5 }}>
-                    {isDesktop
-                        ? "Pixel Pop is designed for the best experience on your phone. Please open this Mini App on your mobile device."
-                        : "This application can only be accessed via the Telegram Bot."}
-                </p>
-
-                {!isDesktop && (
-                    <a
-                        href="https://t.me/mro_flug_bot"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                            marginTop: '1rem',
-                            padding: '12px 24px',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            borderRadius: '12px',
-                            textDecoration: 'none',
-                            fontWeight: 500
-                        }}
-                    >
-                        Open in Telegram
-                    </a>
-                )}
+                <img
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://t.me/pixel_pop_bot/app"
+                    alt="Scan QR Code"
+                    style={{ width: '150px', height: '150px', display: 'block' }}
+                />
             </div>
+
+            {/* Optional: Deep Link for Users already on Mobile Browser */}
+            <a
+                href="https://t.me/pixel_pop_bot/app"
+                style={{
+                    marginTop: '30px',
+                    color: '#3b82f6',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    opacity: 0.8
+                }}
+            >
+                Open directly in Telegram
+            </a>
         </div>
     );
 };
