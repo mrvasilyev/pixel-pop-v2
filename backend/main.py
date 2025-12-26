@@ -439,9 +439,9 @@ def get_bot():
     return bot_instance
 
 STARS_PRICING = {
-    "starter": {"amount": 75, "label": "Starter Pack", "credits": 5, "premium_credits": 0},
-    "creator": {"amount": 250, "label": "Creator Pack", "credits": 15, "premium_credits": 5},
-    "magician": {"amount": 750, "label": "Magician Pack", "credits": 40, "premium_credits": 15}, 
+    "starter": {"amount": 75, "label": "Starter Pack", "credits": 5, "premium_credits": 0, "usd_value": 0.98},
+    "creator": {"amount": 250, "label": "Creator Pack", "credits": 15, "premium_credits": 5, "usd_value": 3.25},
+    "magician": {"amount": 750, "label": "Magician Pack", "credits": 40, "premium_credits": 15, "usd_value": 9.75}, 
 }
 
 @app.post("/api/payment/create-invoice")
@@ -550,9 +550,10 @@ async def telegram_webhook(request: Request):
                 # Upsert Transaction
                 tx_data = {
                     "user_id": user_id,
-                    "amount": plan["amount"], # Stars amount
+                    "amount": plan["usd_value"], # Log USD Value (Net Revenue) instead of Stars
                     "transaction_type": "PURCHASE",
                     "description": f"Bought {plan_id.upper()}",
+
                     "credits_change": plan["credits"],
                     "premium_credits_change": plan["premium_credits"],
                     "reference_id": ref_id 
