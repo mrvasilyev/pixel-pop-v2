@@ -1,0 +1,57 @@
+{
+    "Comment": "Update DNS records for Pixel Pop v2 Infrastructure",
+    "Changes": [
+        {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "pixelpop.v2.frnt.d-t-a.ae",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": [
+                    {
+                        "Value": "468b8a8420543bc2.vercel-dns-016.com."
+                    }
+                ]
+            }
+        },
+        {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "test.pixelpop.v2.frnt.d-t-a.ae",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": [
+                    {
+                        "Value": "468b8a8420543bc2.vercel-dns-016.com."
+                    }
+                ]
+            }
+        },
+        {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "pixelpop.v2.back.d-t-a.ae",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": [
+                    {
+                        "Value": "5pvozpn9.up.railway.app"
+                    }
+                ]
+            }
+        },
+        {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "test.pixelpop.v2.back.d-t-a.ae",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": [
+                    {
+                        "Value": "5lsye2t2.up.railway.app"
+                    }
+                ]
+            }
+        }
+    ]
+}
