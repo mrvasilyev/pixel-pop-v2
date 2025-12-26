@@ -491,33 +491,31 @@ async def telegram_webhook(request: Request):
     Handle Telegram Updates (Pre-checkout & Success)
     """
     try:
-        update_json = await request.json()
-        # print(f"📥 Webhook Update: {json.dumps(update_json)[:200]}...") 
+        update = await request.json()
+        print(f"📥 Webhook Update: {json.dumps(update)[:200]}...") # Log start of update
+    except Exception as e:
+        print(f"❌ Webhook JSON Error: {e}")
+        return {"ok": True} # Ignore invalid JSON
         
-        # Manually parse or use library? Library update object is complex to construct from dict async.
-        # We will iterate manually but use Bot methods for actions.
-        
+    try:
         # 1. Pre-Checkout Query (Must answer ok=True within 10s)
-        if "pre_checkout_query" in update_json:
-            pcq = update_json["pre_checkout_query"]
+        if "pre_checkout_query" in update:
+            pcq = update["pre_checkout_query"]
             pcq_id = pcq["id"]
             
+            print(f"💳 Pre-Checkout: {pcq_id}. Token starts with: {BOT_TOKEN[:5] if BOT_TOKEN else 'NONE'}")
+            
             # Auto-accept
-            try:
-                bot = get_bot()
-                if bot:
-                    await bot.answer_pre_checkout_query(pre_checkout_query_id=pcq_id, ok=True)
-                    print(f"✅ Answered Pre-Checkout: {pcq_id}")
-                else:
-                    print("❌ Bot not init for Pre-Checkout")
-            except Exception as e:
-                print(f"❌ Failed to Answer Pre-Checkout: {e}")
-                
+            res = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerPreCheckoutQuery", json={
+                "pre_checkout_query_id": pcq_id,
+                "ok": True
+            })
+            print(f"📤 Answer Pre-Checkout: {res.status_code} {res.text}")
             return {"ok": True}
 
         # 2. Successful Payment
-        if "message" in update_json and "successful_payment" in update_json["message"]:
-            msg = update_json["message"]
+        if "message" in update and "successful_payment" in update["message"]:
+            msg = update["message"]
             pay_info = msg["successful_payment"]
             
             # Payload format: "user_id:plan_id"
@@ -527,11 +525,7 @@ async def telegram_webhook(request: Request):
                 return {"ok": True}
                 
             user_id_str, plan_id = invoice_payload.split(":", 1)
-            try:
-                user_id = int(user_id_str)
-            except:
-                print(f"❌ Invalid User ID in payload: {user_id_str}")
-                return {"ok": True}
+            user_id = int(user_id_str)
             
             print(f"💰 PAYMENT SUCCESS: User {user_id} bought {plan_id}")
             
@@ -574,6 +568,7 @@ async def telegram_webhook(request: Request):
 
     except Exception as e:
         print(f"❌ Webhook Processing Error: {e}")
+        # Return OK to prevent Telegram from retrying indefinitely
         return {"ok": True}
 
     return {"ok": True}
