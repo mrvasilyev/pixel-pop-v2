@@ -505,16 +505,15 @@ async def telegram_webhook(request: Request):
             
             print(f"💳 Pre-Checkout: {pcq_id}. Token check: {'OK' if BOT_TOKEN else 'MISSING'}")
             
-            # Auto-accept using SDK (Async & Reliable)
+            # Use raw requests for reliability (avoid async SDK issues)
             try:
-                bot = get_bot()
-                if bot:
-                    await bot.answer_pre_checkout_query(pre_checkout_query_id=pcq_id, ok=True)
-                    print(f"✅ Answered Pre-Checkout (SDK): {pcq_id}")
-                else:
-                    print("❌ Bot instance missing for Pre-Checkout")
+                url = f"https://api.telegram.org/bot{BOT_TOKEN}/answerPreCheckoutQuery"
+                payload = {"pre_checkout_query_id": pcq_id, "ok": True}
+                res = requests.post(url, json=payload, timeout=5)
+                res.raise_for_status()
+                print(f"✅ Answered Pre-Checkout (HTTP): {pcq_id} -> {res.json()}")
             except Exception as e:
-                print(f"❌ Failed to Answer Pre-Checkout: {e}")
+                print(f"❌ Failed to Answer Pre-Checkout (HTTP): {e}")
                 
             return {"ok": True}
 
