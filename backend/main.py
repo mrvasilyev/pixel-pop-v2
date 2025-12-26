@@ -120,58 +120,7 @@ async def get_current_user(authorization: str = Header(...)):
         print(f"❌ Get User Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/debug/purchase")
-async def debug_purchase(
-    request: Request,
-    authorization: str = Header(...)
-):
-    """
-    DEBUG: Simulates a purchase by directly adding credits.
-    """
-    user_id = verify_jwt_token(authorization, JWT_SECRET)
-    
-    body = await request.json()
-    plan_id = body.get("plan_id")
-    basic_credits = body.get("basic_credits", 0)
-    premium_credits = body.get("premium_credits", 0)
-    
-    # Import locally
-    from worker import supabase
-    if not supabase:
-        raise HTTPException(status_code=503, detail="Database unavailable")
 
-    print(f"💰 DEBUG PURCHASE: User {user_id} bought {plan_id} (+{basic_credits} basic, +{premium_credits} prem)")
-    
-    try:
-        # Get current balance
-        res = supabase.table("user_balances").select("*").eq("user_id", user_id).execute()
-        
-        current_basic = 0
-        current_prem = 0
-        
-        if res.data:
-            current_basic = res.data[0].get("credits", 0)
-            current_prem = res.data[0].get("premium_credits", 0)
-            
-            # Update
-            supabase.table("user_balances").update({
-                "credits": current_basic + basic_credits,
-                "premium_credits": current_prem + premium_credits
-            }).eq("user_id", user_id).execute()
-        else:
-            # Create
-            supabase.table("user_balances").insert({
-                "user_id": user_id,
-                "credits": basic_credits,
-                "premium_credits": premium_credits,
-                "balance": 0.0
-            }).execute()
-            
-        return {"status": "success", "message": f"Added {basic_credits} basic and {premium_credits} premium credits"}
-        
-    except Exception as e:
-        print(f"❌ Debug Purchase Failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generation", status_code=202)
 async def create_generation_job(
