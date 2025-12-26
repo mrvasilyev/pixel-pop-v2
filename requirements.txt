@@ -15,3 +15,4 @@ requests
 supabase
 python-multipart
 Pillow
+python-telegram-bot
