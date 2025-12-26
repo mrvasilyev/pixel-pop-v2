@@ -105,6 +105,7 @@ const Paywall = ({ isOpen, onClose }) => {
 
         try {
             const token = await login();
+            if (!token) return;
 
             if (!token) {
                 console.error("No auth token available");
@@ -117,25 +118,42 @@ const Paywall = ({ isOpen, onClose }) => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    plan_id: plan.id,
-                    basic_credits: plan.basicCredits,
-                    premium_credits: plan.premiumCredits
-                })
+                body: JSON.stringify({ plan_id: plan.id })
             });
 
-            if (response.ok) {
-                console.log("Purchase successful (Simulated)");
-                // Close paywall
-                onClose();
-                // Optionally trigger a reload or event to refresh balance
-                window.location.reload(); // Simple brute force refresh for MVP
+            if (!response.ok) {
+                console.error("Invoice creation failed", await response.text());
+                alert("Could not initialize payment. Please try again.");
+                return;
+            }
+
+            const data = await response.json();
+            const invoiceUrl = data.invoice_link;
+
+            // 2. Open Invoice in Telegram
+            if (window.Telegram?.WebApp?.openInvoice) {
+                window.Telegram.WebApp.openInvoice(invoiceUrl, (status) => {
+                    if (status === 'paid') {
+                        console.log("Payment successful!");
+                        onClose();
+                        window.location.reload();
+                    } else if (status === 'cancelled') {
+                        console.log("Payment cancelled.");
+                    } else if (status === 'failed') {
+                        console.error("Payment failed.");
+                        alert("Payment failed.");
+                    } else {
+                        console.log("Payment status:", status);
+                    }
+                });
             } else {
-                console.error("Purchase failed", await response.text());
+                // Fallback (e.g. open link if independent, though Stars usually requires WebApp context)
+                window.open(invoiceUrl, '_blank');
             }
 
         } catch (error) {
             console.error("Purchase error:", error);
+            alert("An error occurred during purchase.");
         }
     };
 
