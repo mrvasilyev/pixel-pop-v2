@@ -107,8 +107,12 @@ const Paywall = ({ isOpen, onClose }) => {
             const token = await login();
             if (!token) return;
 
-            // 1. Create Invoice Link via Backend
-            const response = await fetch(`${API_BASE}/api/payment/create-invoice`, {
+            if (!token) {
+                console.error("No auth token available");
+                return;
+            }
+
+            const response = await fetch(`${API_BASE}/api/debug/purchase`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
