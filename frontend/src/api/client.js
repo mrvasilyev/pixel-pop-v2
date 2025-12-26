@@ -3,7 +3,7 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 // Allow dynamic API targeting via Env Var (e.g. for Vercel Preview -> Railway Test)
 // If not set, defaults to '' which uses relative paths (handled by Vite proxy locally)
 // If not set, default to Railway Test Backend (Direct) to bypass Vercel Proxy issues
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://pixelpop-test.up.railway.app';
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://pixelpop-test.up.railway.app';
 
 // Mock Telegram initData for dev if missing
 const getTelegramInitData = () => {

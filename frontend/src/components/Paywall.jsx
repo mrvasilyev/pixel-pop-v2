@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { CircleX, Check } from 'lucide-react';
 import './Paywall.css';
-import { login } from '../api/client';
+import { login, API_BASE } from '../api/client';
 
 const PLANS = [
     {
@@ -111,7 +111,7 @@ const Paywall = ({ isOpen, onClose }) => {
                 return;
             }
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/debug/purchase`, {
+            const response = await fetch(`${API_BASE}/api/debug/purchase`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
