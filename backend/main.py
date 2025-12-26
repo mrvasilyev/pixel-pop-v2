@@ -425,13 +425,21 @@ else:
 
 # --- Telegram Stars Payment Logic ---
 import requests
+import telegram 
+from telegram.error import TelegramError
+
+# Initialize Bot Instance
+bot_instance = None
+def get_bot():
+    global bot_instance
+    if not bot_instance and BOT_TOKEN:
+        bot_instance = telegram.Bot(token=BOT_TOKEN)
+    return bot_instance
 
 STARS_PRICING = {
     "starter": {"amount": 250, "label": "Starter Pack", "credits": 10, "premium_credits": 0},
     "creator": {"amount": 1500, "label": "Creator Pack", "credits": 10, "premium_credits": 5},
-    "magician": {"amount": 2500, "label": "Magician Pack", "credits": 10, "premium_credits": 10}, # Updated to 2500 to match high value perception or keep 1500? User UI said 1500 for both. Let's trust UI or fix it. UI said 1500 for Magician too?
-    # Checking UI... UI says 1500 for Magician. I will stick to UI values but usually tiered.
-    # Wait, UI had Creator=1500 and Magician=1500. Let's default to UI but add fallback.
+    "magician": {"amount": 2500, "label": "Magician Pack", "credits": 10, "premium_credits": 10}, 
 }
 
 @app.post("/api/payment/create-invoice")
@@ -457,14 +465,21 @@ async def create_invoice(
     }
 
     try:
-        res = requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/createInvoiceLink", json=payload)
-        res_data = res.json()
-        
-        if not res_data.get("ok"):
-            print(f"❌ Invoice Error: {res_data}")
-            raise HTTPException(status_code=500, detail=res_data.get("description", "Telegram API Error"))
-            
-        return {"invoice_link": res_data["result"]}
+        # Use Bot API directly or via library. Library is better for consistency but createInvoiceLink is simple.
+        # Let's use the library since we are adding it.
+        bot = get_bot()
+        if not bot:
+             raise Exception("Bot token not configured")
+             
+        link = await bot.create_invoice_link(
+             title=payload["title"],
+             description=payload["description"],
+             payload=payload["payload"],
+             provider_token=payload["provider_token"],
+             currency=payload["currency"],
+             prices=[telegram.LabeledPrice(plan["label"], plan["amount"])]
+        )
+        return {"invoice_link": link}
 
     except Exception as e:
         print(f"❌ Payment Init Failed: {e}")

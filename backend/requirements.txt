@@ -17,3 +17,4 @@ supabase
 pyjwt
 python-multipart
 Pillow
+python-telegram-bot
