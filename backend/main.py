@@ -592,3 +592,5 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
 
+
+# Force Deploy: Triggering Railway Rebuild (Idempotency Fix) Sat Dec 27 00:04:44 +04 2025
