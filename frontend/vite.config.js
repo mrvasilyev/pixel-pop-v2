@@ -119,6 +119,19 @@ export default defineConfig({
       }
     }
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-keystatic': ['@keystatic/core'],
+          'vendor-telegram': ['@telegram-apps/sdk-react'],
+          'vendor-ui': ['lucide-react', '@tanstack/react-query'],
+        }
+      }
+    }
+  },
   resolve: {
     preserveSymlinks: true
   }

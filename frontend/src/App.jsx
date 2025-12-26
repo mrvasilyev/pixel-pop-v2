@@ -1,14 +1,12 @@
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import TopStyles from './components/TopStyles';
 import DiscoverStyles from './components/DiscoverStyles';
 import Gallery from './components/Gallery';
-import { Keystatic } from '@keystatic/core/ui';
-import config from '../keystatic.config';
 
-function Admin() {
-  return <Keystatic config={config} />;
-}
+// Lazy load Admin to save ~2MB bundle size for users
+const Admin = React.lazy(() => import('./Admin'));
 
 import Paywall from './components/Paywall';
 import { useUser } from './context/UserContext';
@@ -38,7 +36,14 @@ function App() {
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             {(import.meta.env.VITE_ENABLE_CMS === 'true' || import.meta.env.DEV) && (
-              <Route path="/keystatic/*" element={<Admin />} />
+              <Route
+                path="/keystatic/*"
+                element={
+                  <Suspense fallback={<div>Loading CMS...</div>}>
+                    <Admin />
+                  </Suspense>
+                }
+              />
             )}
             <Route path="/" element={<MainScreen />} />
           </Routes>
