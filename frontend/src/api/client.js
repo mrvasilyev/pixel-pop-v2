@@ -31,6 +31,21 @@ export async function login() {
   return accessToken;
 }
 
+export const getUser = async () => {
+    try {
+        const token = await login();
+        const res = await fetch(`${API_BASE}/api/user/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!res.ok) throw new Error('Failed to fetch user');
+        return await res.json();
+    } catch (error) {
+        console.error("Get user failed:", error);
+        return null;
+    }
+};
+
 export const generateImage = async (prompt, styleId, slug, extraConfig = {}) => {
   try {
     const token = await login();

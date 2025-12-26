@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { login } from '../api/client';
+import { login, getUser } from '../api/client';
 
 const UserContext = createContext();
 
@@ -17,24 +17,11 @@ export const UserProvider = ({ children }) => {
 
     const fetchUser = async () => {
         try {
-            const token = await login();
-            if (!token) {
-                setLoading(false);
-                return;
-            }
-
-            // Need correct URL. Using Vite proxy /api
-            const response = await fetch('/api/user/me', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
+            const data = await getUser();
+            if (data) {
                 setUser(data);
             } else {
-                console.warn("Failed to fetch user", response.status);
+                console.warn("User data is null");
             }
         } catch (error) {
             console.error("Error fetching user:", error);
