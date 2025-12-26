@@ -103,7 +103,7 @@ def get_or_create_user(user_data: dict, supabase_client) -> dict:
                 "user_id": user_id,
                 "transaction_type": "GIFT",
                 "amount": 0.0,
-                "credits_change": 3,
+                "credits_change": 1,
                 "description": "Welcome Gift",
                 "reference_id": f"gift_{user_id}_init" # Idempotency Key
             }
