@@ -36,8 +36,8 @@ const PLANS = [
     {
         id: 'magician',
         name: 'Magician',
-        stars: 1500,
-        priceDisplay: '1500 Stars',
+        stars: 2500,
+        priceDisplay: '2500 Stars',
         features: [
             '10 Pro images',
             'Maximum realism',
