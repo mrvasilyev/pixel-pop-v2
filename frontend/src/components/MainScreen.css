@@ -239,6 +239,13 @@ body {
     padding: 8px 2px 0 2px;
 }
 
+/* Tablet Layout: 3 Columns */
+@media (min-width: 600px) {
+    .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .gallery-item {
     aspect-ratio: 1;
     background-color: #222;
