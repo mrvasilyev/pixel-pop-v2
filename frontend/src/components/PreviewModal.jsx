@@ -13,14 +13,24 @@ const PreviewModal = ({ image, onClose }) => {
     };
 
     const handleDownload = () => {
-        // Create temporary link to force download if possible, or open in new tab
-        const link = document.createElement('a');
-        link.href = image.src;
-        link.download = `pixel-pop-${image.id || 'image'}.png`;
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const fileName = `pixel-pop-${image.id || 'image'}.png`;
+
+        // Check if Telegram WebApp downloadFile is available (Bot API 8.0+)
+        if (window.Telegram?.WebApp?.downloadFile) {
+            window.Telegram.WebApp.downloadFile({
+                url: image.src,
+                file_name: fileName
+            });
+        } else {
+            // Legacy Fallback
+            const link = document.createElement('a');
+            link.href = image.src;
+            link.download = fileName;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     const handleShare = async () => {
