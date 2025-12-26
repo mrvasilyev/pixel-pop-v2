@@ -153,7 +153,7 @@ const Paywall = ({ isOpen, onClose }) => {
 
         } catch (error) {
             console.error("Purchase error:", error);
-            alert(`Purchase failed: ${error.message || error}`);
+            alert("An error occurred during purchase.");
         }
     };
 
