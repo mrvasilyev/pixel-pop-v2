@@ -42,12 +42,12 @@
     position: relative;
 }
 
-.close-button {
+.paywall-content .close-button {
     background: none;
     border: none;
     padding: 0;
     cursor: pointer;
-    color: #cccccc;
+    color: #000000;
     position: absolute;
     top: 16px;
     right: 16px;
@@ -60,7 +60,7 @@
     opacity: 0.6;
 }
 
-.close-button:hover {
+.paywall-content .close-button:hover {
     opacity: 1;
 }
 
