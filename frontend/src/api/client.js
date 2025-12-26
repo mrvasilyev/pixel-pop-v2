@@ -1,17 +1,20 @@
+```
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Allow dynamic API targeting via Env Var (e.g. for Vercel Preview -> Railway Test)
-// If not set, defaults to '' which uses relative paths (handled by Vite proxy locally)
-// If not set, default to Railway Test Backend (Direct) to bypass Vercel Proxy issues
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://pixelpop-test.up.railway.app';
+// Allow dynamic API targeting via Env Var
+// Respects .env.production, .env.test, .env.development
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 // Mock Telegram initData for dev if missing
 const getTelegramInitData = () => {
+  if (import.meta.env.VITE_ENV === 'development') {
+      const mockId = import.meta.env.VITE_MOCK_TELEGRAM_USER_ID || '90847291';
+      return `query_id=AAF&user=%7B%22id%22%3A${mockId}%2C%22first_name%22%3A%22DevUser%22%2C%22last_name%22%3A%22Local%22%2C%22username%22%3A%22dev_user%22%2C%22language_code%22%3A%22en%22%2C%22allows_write_to_pm%22%3Atrue%7D&auth_date=1712234000&hash=mockhash123`;
+  }
   if (window.Telegram?.WebApp?.initData) {
     return window.Telegram.WebApp.initData;
   }
-  // Mock for Dev (matches dummy validation if token is missing/mocked)
-  return "query_id=mock&user=%7B%22id%22%3A51576055%2C%22first_name%22%3A%22Dev%22%7D&auth_date=1&hash=mock";
+  return '';
 };
 
 let accessToken = null;
