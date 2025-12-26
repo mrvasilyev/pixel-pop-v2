@@ -539,7 +539,14 @@ async def telegram_webhook(request: Request):
             from worker import supabase
             if supabase and plan_id in STARS_PRICING:
                 plan = STARS_PRICING[plan_id]
+                ref_id = f"pay_{msg['message_id']}"
                 
+                # Idempotency Check
+                existing = supabase.table("user_transactions").select("id").eq("reference_id", ref_id).execute()
+                if existing.data:
+                    print(f"⚠️ Duplicate Payment Ignored: {ref_id}")
+                    return {"ok": True}
+
                 # Upsert Transaction
                 tx_data = {
                     "user_id": user_id,
@@ -548,7 +555,7 @@ async def telegram_webhook(request: Request):
                     "description": f"Bought {plan_id.upper()}",
                     "credits_change": plan["credits"],
                     "premium_credits_change": plan["premium_credits"],
-                    "reference_id": f"pay_{msg['message_id']}" 
+                    "reference_id": ref_id 
                 }
                 supabase.table("user_transactions").insert(tx_data).execute()
                 
