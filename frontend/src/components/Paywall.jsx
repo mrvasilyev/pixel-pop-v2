@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { CircleX, Check } from 'lucide-react';
 import './Paywall.css';
 import { login, API_BASE } from '../api/client';
+import { useUser } from '../context/UserContext';
 
 const PLANS = [
     {
@@ -55,6 +56,7 @@ const PLANS = [
 
 const Paywall = ({ isOpen, onClose }) => {
     const carouselRef = useRef(null);
+    const { user, setUser, refreshUser } = useUser();
     const [theme, setTheme] = React.useState('light');
 
     useEffect(() => {
@@ -137,8 +139,26 @@ const Paywall = ({ isOpen, onClose }) => {
                     // alert("Invoice Status: " + status); // DEBUG
                     if (status === 'paid') {
                         console.log("Payment successful!");
-                        onClose();
-                        window.location.reload();
+                        console.log("Payment successful!");
+
+                        // 1. Optimistic Update (Immediate Feedback)
+                        if (user && setUser) {
+                            setUser(prev => ({
+                                ...prev,
+                                credits: (prev.credits || 0) + (plan.basicCredits || 0),
+                                premium_credits: (prev.premium_credits || 0) + (plan.premiumCredits || 0)
+                            }));
+                        }
+
+                        // 2. Trigger Background Refresh (Sync with Server)
+                        onClose(); // Close Paywall immediately for smooth UX
+
+                        // Use refreshUser if available
+                        if (refreshUser) {
+                            setTimeout(() => refreshUser(), 1000);
+                            setTimeout(() => refreshUser(), 3000); // Retry to catch webhook delay
+                            setTimeout(() => refreshUser(), 5000);
+                        }
                     } else if (status === 'cancelled') {
                         console.log("Payment cancelled.");
                     } else if (status === 'failed') {

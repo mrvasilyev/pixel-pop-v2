@@ -53,6 +53,7 @@ export const UserProvider = ({ children }) => {
         <UserContext.Provider value={{
             user,
             loading,
+            setUser,
             refreshUser,
             isPaywallOpen,
             openPaywall,
