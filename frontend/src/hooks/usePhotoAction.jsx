@@ -49,7 +49,7 @@ export const usePhotoAction = (options = {}) => {
             <input
                 type="file"
                 ref={fileInputRef}
-                // Use generic image/* to maximize chance of showing "Camera or Gallery" chooser on Android
+                // generic image/* works well for Gallery (opens Photo Gallery)
                 accept="image/*"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
@@ -57,9 +57,12 @@ export const usePhotoAction = (options = {}) => {
             <input
                 type="file"
                 ref={cameraInputRef}
-                // Try legacy 'capture=camera' hack in accept string AND standard capture attribute
-                accept="image/*;capture=camera"
+                // "Take Selfie": Try specific 'image/jpeg' to hint Camera app.
+                // Removed 'capture=camera' hack as it opened Recents.
+                accept="image/jpeg"
                 capture="user"
+                id="camera-input"
+                name="camera"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
             />
