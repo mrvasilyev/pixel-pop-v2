@@ -22,9 +22,12 @@ const ActionSheet = ({ isOpen, onClose, onAction, title }) => {
     if (!shouldRender) return null;
 
     const handleAction = (actionId) => {
+        // CRITICAL: onAction must be called SYNCHRONOUSLY to satisfy mobile browser security checks for file inputs.
+        // If we wait for setTimeout, the context is lost and the camera/gallery won't open on Android/iOS.
+        onAction(actionId);
+
         setIsClosing(true);
         setTimeout(() => {
-            onAction(actionId);
             onClose(); // Ensure parent state sync
         }, 300);
     };
