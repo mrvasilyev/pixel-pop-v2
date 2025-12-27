@@ -55,8 +55,10 @@ const PreviewModal = ({ image, onClose }) => {
         }
     };
 
+    const platform = window.Telegram?.WebApp?.platform || 'unknown';
+
     return (
-        <div className="preview-modal-overlay" onClick={handleOverlayClick}>
+        <div className="preview-modal-overlay" onClick={handleOverlayClick} data-platform={platform}>
             {/* Header Layer - Absolute Top */}
             <div className="preview-header">
                 <button className="preview-close-btn" onClick={onClose}>

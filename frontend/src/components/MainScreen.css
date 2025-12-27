@@ -638,14 +638,22 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    /* Respect Safe Area (Notch/Dynamic Island) + spacing */
-    padding: calc(60px + env(safe-area-inset-top)) 16px 16px 16px;
+    /* Default (Desktop/Web): Standard spacing */
+    padding: 60px 16px 16px 16px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     z-index: 10001;
     pointer-events: none;
     /* Let clicks pass through empty areas */
+}
+
+/* Mobile-Specific Overrides (Android/iOS) */
+/* Targets the header when inside a modal with data-platform="android" or "ios" */
+.preview-modal-overlay[data-platform="android"] .preview-header,
+.preview-modal-overlay[data-platform="ios"] .preview-header {
+    /* Increased to 85px to clear native Telegram headers on mobile */
+    padding-top: calc(85px + env(safe-area-inset-top));
 }
 
 /* Close Btn: Top Left */
