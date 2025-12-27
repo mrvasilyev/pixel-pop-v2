@@ -49,15 +49,16 @@ export const usePhotoAction = (options = {}) => {
             <input
                 type="file"
                 ref={fileInputRef}
-                // Try specific types to encourage library on some Androids/iOS versions, though iOS menu is persistent
-                accept="image/png, image/jpeg, image/heic, image/webp"
+                // Use generic image/* to maximize chance of showing "Camera or Gallery" chooser on Android
+                accept="image/*"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
             />
             <input
                 type="file"
                 ref={cameraInputRef}
-                accept="image/*"
+                // Try legacy 'capture=camera' hack in accept string AND standard capture attribute
+                accept="image/*;capture=camera"
                 capture="user"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
