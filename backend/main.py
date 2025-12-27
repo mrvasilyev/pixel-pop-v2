@@ -573,25 +573,28 @@ async def telegram_webhook(request: Request):
                 }
                 supabase.table("user_transactions").insert(tx_data).execute()
                 
-                # Update Balance
-                try:
-                    bal_res = supabase.table("user_balances").select("*").eq("user_id", user_id).execute()
-                    if bal_res.data:
-                        cur = bal_res.data[0]
-                        supabase.table("user_balances").update({
-                            "credits": cur.get("credits", 0) + plan["credits"],
-                            "premium_credits": cur.get("premium_credits", 0) + plan["premium_credits"]
-                        }).eq("user_id", user_id).execute()
-                    else:
-                        supabase.table("user_balances").insert({
-                            "user_id": user_id,
-                            "credits": plan["credits"],
-                            "premium_credits": plan["premium_credits"],
-                            "balance": 0.0
-                        }).execute()
-                    print(f"✅ Balance Updated for User {user_id}")
-                except Exception as e:
-                    print(f"❌ Balance Update Failed: {e}")
+                # Update Balance - REMOVED (Handled by DB Trigger on user_transactions)
+                # Explanation: Inserting into 'user_transactions' fires a trigger that updates 'user_balances'.
+                # Doing it manually here caused Double Credits (Trigger + Manual).
+                # --------------------------------------------------------------------------------
+                # try:
+                #     bal_res = supabase.table("user_balances").select("*").eq("user_id", user_id).execute()
+                #     if bal_res.data:
+                #         cur = bal_res.data[0]
+                #         supabase.table("user_balances").update({
+                #             "credits": cur.get("credits", 0) + plan["credits"],
+                #             "premium_credits": cur.get("premium_credits", 0) + plan["premium_credits"]
+                #         }).eq("user_id", user_id).execute()
+                #     else:
+                #         supabase.table("user_balances").insert({
+                #             "user_id": user_id,
+                #             "credits": plan["credits"],
+                #             "premium_credits": plan["premium_credits"],
+                #             "balance": 0.0
+                #         }).execute()
+                #     print(f"✅ Balance Updated for User {user_id}")
+                # except Exception as e:
+                #     print(f"❌ Balance Update Failed: {e}")
 
     except Exception as e:
         print(f"❌ Webhook Processing Error: {e}")
