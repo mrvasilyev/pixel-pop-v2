@@ -37,6 +37,16 @@ body {
     /* Lift above body background */
 }
 
+/* Desktop Overrides: Force standard padding, ignore large safe-area defaults */
+.main-screen[data-platform="tdesktop"],
+.main-screen[data-platform="macos"],
+.main-screen[data-platform="web"],
+.main-screen[data-platform="weba"],
+.main-screen[data-platform="webk"] {
+    /* Use standard 24px top padding on desktop, ignoring potential safe-area glitches */
+    padding-top: 24px !important;
+}
+
 /* Header Section */
 .header {
     width: 100%;
@@ -648,12 +658,16 @@ body {
     /* Let clicks pass through empty areas */
 }
 
-/* Mobile-Specific Overrides (Android/iOS) */
-/* Targets the header when inside a modal with data-platform="android" or "ios" */
-.preview-modal-overlay[data-platform="android"] .preview-header,
-.preview-modal-overlay[data-platform="ios"] .preview-header {
-    /* Increased to 85px to clear native Telegram headers on mobile */
+/* Mobile-Specific Overrides */
+
+/* Android: Needs large static padding to clear native header (safe-area often small/0) */
+.preview-modal-overlay[data-platform="android"] .preview-header {
     padding-top: calc(85px + env(safe-area-inset-top));
+}
+
+/* iOS: Safe area is large (47px+), so we need less static padding */
+.preview-modal-overlay[data-platform="ios"] .preview-header {
+    padding-top: calc(60px + env(safe-area-inset-top));
 }
 
 /* Close Btn: Top Left */

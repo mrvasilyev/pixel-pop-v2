@@ -57,8 +57,10 @@ function MainScreen() {
     return <LockScreen type={lockState} />;
   }
 
+  const platform = window.Telegram?.WebApp?.platform || 'unknown';
+
   return (
-    <div className="main-screen">
+    <div className="main-screen" data-platform={platform}>
       <Header />
       <TopStyles />
       <DiscoverStyles />
