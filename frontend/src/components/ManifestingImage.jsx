@@ -40,7 +40,15 @@ const ManifestingImage = ({ src, previewUrl, alt, className, style, ...props }) 
                 src={src}
                 alt={alt}
                 {...props}
-                onLoad={() => setIsLoaded(true)}
+                onLoad={async (e) => {
+                    // Ensure image is fully decoded/painted before manifesting
+                    try {
+                        await e.target.decode();
+                    } catch (err) {
+                        // ignore decode error
+                    }
+                    setIsLoaded(true);
+                }}
                 onError={() => setHasError(true)}
                 style={{
                     position: 'relative', // Ensure it takes space if needed, or absolute if container is fixed

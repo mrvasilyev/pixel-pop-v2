@@ -25,7 +25,15 @@ const FadeImage = ({ src, alt, className, style, width, height, ...props }) => {
                 src={src}
                 alt={alt}
                 {...props}
-                onLoad={() => setIsLoaded(true)}
+                onLoad={async (e) => {
+                    // Ensure image is fully decoded/painted before fading in
+                    try {
+                        await e.target.decode();
+                    } catch (err) {
+                        // ignore decode errors
+                    }
+                    setIsLoaded(true);
+                }}
                 onError={() => setHasError(true)}
                 style={{
                     width: '100%',
