@@ -5,10 +5,31 @@ const FadeImage = ({ src, alt, className, style, width, height, ...props }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasError, setHasError] = useState(false);
 
-    // Reset state if src changes
+    // Reset state and Pre-load image
     React.useEffect(() => {
         setIsLoaded(false);
         setHasError(false);
+
+        const img = new Image();
+        img.src = src;
+
+        // Use decode() to ensure it's ready for painting
+        img.decode()
+            .then(() => {
+                setIsLoaded(true);
+            })
+            .catch((err) => {
+                // Fallback for decode error or load error
+                console.warn("Image decode failed, falling back to load", err);
+                img.onload = () => setIsLoaded(true);
+            });
+
+        img.onerror = () => setHasError(true);
+
+        return () => {
+            img.onload = null;
+            img.onerror = null;
+        };
     }, [src]);
 
     return (
@@ -25,15 +46,8 @@ const FadeImage = ({ src, alt, className, style, width, height, ...props }) => {
                 src={src}
                 alt={alt}
                 {...props}
-                onLoad={async (e) => {
-                    // Ensure image is fully decoded/painted before fading in
-                    try {
-                        await e.target.decode();
-                    } catch (err) {
-                        // ignore decode errors
-                    }
-                    setIsLoaded(true);
-                }}
+                // No onLoad handler needed here as we pre-loaded it
+                // We keep onError just in case the DOM element fails differently
                 onError={() => setHasError(true)}
                 style={{
                     width: '100%',

@@ -4,10 +4,30 @@ const ManifestingImage = ({ src, previewUrl, alt, className, style, ...props }) 
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasError, setHasError] = useState(false);
 
-    // Reset state if src changes (e.g. from recycling)
+    // Reset state and Pre-load image
     React.useEffect(() => {
         setIsLoaded(false);
         setHasError(false);
+
+        const img = new Image();
+        img.src = src;
+
+        // Use decode() to ensure it's ready for painting
+        img.decode()
+            .then(() => {
+                setIsLoaded(true);
+            })
+            .catch((err) => {
+                console.warn("Manifest decode failed", err);
+                img.onload = () => setIsLoaded(true);
+            });
+
+        img.onerror = () => setHasError(true);
+
+        return () => {
+            img.onload = null;
+            img.onerror = null;
+        };
     }, [src]);
 
     return (
@@ -40,15 +60,7 @@ const ManifestingImage = ({ src, previewUrl, alt, className, style, ...props }) 
                 src={src}
                 alt={alt}
                 {...props}
-                onLoad={async (e) => {
-                    // Ensure image is fully decoded/painted before manifesting
-                    try {
-                        await e.target.decode();
-                    } catch (err) {
-                        // ignore decode error
-                    }
-                    setIsLoaded(true);
-                }}
+                // Pre-loaded fully in useEffect logic
                 onError={() => setHasError(true)}
                 style={{
                     position: 'relative', // Ensure it takes space if needed, or absolute if container is fixed
