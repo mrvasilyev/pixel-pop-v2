@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import './MainScreen.css';
 import { Sparkles, Lollipop } from 'lucide-react';
 import headerData from '../content/header.json';
@@ -106,6 +106,22 @@ const Gallery = () => {
             }
         }
     }, []);
+
+    // Infinite Scroll Observer
+    const observer = useRef();
+    const loadMoreRef = useCallback(node => {
+        if (isFetchingNextPage) return;
+        if (observer.current) observer.current.disconnect();
+
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasNextPage) {
+                console.log("🔄 Infinite Scroll Triggered");
+                fetchNextPage();
+            }
+        });
+
+        if (node) observer.current.observe(node);
+    }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
     // Sync React Query data to local state AND update localStorage cache
     React.useEffect(() => {
@@ -221,17 +237,22 @@ const Gallery = () => {
                         </div>
                     ))}
 
-                    {/* Load More Button (Infinite Scroll Trigger) */}
+                    {/* Infinite Scroll Sentinel */}
                     {hasNextPage && (
-                        <div className="gallery-load-more" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px' }}>
-                            <button
-                                onClick={() => fetchNextPage()}
-                                disabled={isFetchingNextPage}
-                                className="cta-button"
-                                style={{ fontSize: '14px', padding: '8px 16px' }}
-                            >
-                                {isFetchingNextPage ? 'Loading more...' : 'Load More'}
-                            </button>
+                        <div
+                            ref={loadMoreRef}
+                            style={{
+                                gridColumn: '1 / -1',
+                                height: '20px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginTop: '20px'
+                            }}
+                        >
+                            {isFetchingNextPage && (
+                                <Lollipop size={32} color="#ffffff" className="lollipop-spinner" />
+                            )}
                         </div>
                     )}
                 </div>
