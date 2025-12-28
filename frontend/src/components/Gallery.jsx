@@ -243,17 +243,10 @@ const Gallery = () => {
                             ref={loadMoreRef}
                             style={{
                                 gridColumn: '1 / -1',
-                                height: '20px',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
+                                height: '20px', // Keep height for intersection detection
                                 marginTop: '20px'
                             }}
-                        >
-                            {isFetchingNextPage && (
-                                <Lollipop size={32} color="#ffffff" className="lollipop-spinner" />
-                            )}
-                        </div>
+                        />
                     )}
                 </div>
             ) : (
