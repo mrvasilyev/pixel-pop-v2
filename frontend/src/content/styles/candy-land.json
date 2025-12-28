@@ -1,7 +1,7 @@
 {
-    "title": "Candy Land",
-    "cover": "/images/styles/candy-land/cover.webp",
-    "prompt": "Create an ultra-realistic 8K Christmas portrait using a 55mm lens with bright, playful holiday lighting, based on the input photo while strictly preserving the subjects\u2019 real facial features. Style the subjects in festive outfits embellished with shimmering sequins, and have them hold an oversized pink-and-white peppermint lollipop prop resting over her shoulder in a fun, candy-land pose. The scene is set in a fully decorated holiday studio featuring fluffy artificial snow on the ground, frost-dusted Christmas trees adorned with pink ornaments and string lights, oversized candy canes framing the scene, and a large glossy red Christmas ornament near her feet. Lighting should be clean, bright, and celebratory to highlight the sparkle of the sequins and candy-themed props, with a vibrant color palette of reds, whites, and silvers that evokes a magical North Pole holiday atmosphere.",
-    "order": 1,
-    "hasPrompt": true
+  "title": "Candy Land",
+  "cover": "/images/styles/candy-land/cover.webp",
+  "prompt": "Create an ultra-realistic 8K Christmas portrait using a 55mm lens with bright, playful holiday lighting, based on the input photo, while strictly preserving the subjects' real facial features. Style the subjects in festive outfits embellished with shimmering sequins, and have them hold an oversized pink-and-white peppermint lollipop prop resting over their shoulder in a fun, candy-land pose. The scene is set in a fully decorated holiday studio featuring fluffy artificial snow on the ground, frost-dusted Christmas trees adorned with pink ornaments and string lights, oversized candy canes framing the scene, and a large glossy red Christmas ornament near their feet. Lighting should be clean, bright, and celebratory to highlight the sparkle of the sequins and candy-themed props, with a vibrant colour palette of reds, whites, and silvers that evokes a magical North Pole holiday atmosphere.",
+  "order": 1,
+  "hasPrompt": true
 }
