@@ -25,12 +25,19 @@ app = FastAPI()
 
 # Allow CORS
 # Strict CORS
-origins = [
-    "https://pixelpop.v2.frnt.d-t-a.ae",
-    "https://test.pixelpop.v2.frnt.d-t-a.ae",
-    "http://localhost:5173",
-    "http://localhost:5174"
-]
+# Strict CORS Logic
+if os.getenv("RAILWAY_ENVIRONMENT") == "production":
+    origins = [
+        "https://pixelpop.v2.frnt.d-t-a.ae"
+    ]
+else:
+    # Development & Test
+    origins = [
+        "https://pixelpop.v2.frnt.d-t-a.ae",
+        "https://test.pixelpop.v2.frnt.d-t-a.ae",
+        "http://localhost:5173",
+        "http://localhost:5174"
+    ]
 
 app.add_middleware(
     CORSMiddleware,
