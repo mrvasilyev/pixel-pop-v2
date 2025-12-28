@@ -28,8 +28,9 @@ def validate_telegram_data(init_data: str, bot_token: str) -> dict:
     if "hash" not in parsed_data:
         raise HTTPException(status_code=400, detail="Missing hash")
 
-    # DEV: Allow mock hash if explicitly sent (for local dev without real Telegram/Ngrok)
-    if parsed_data["hash"] == "mock":
+    # DEV: Allow mock hash ONLY in local development
+    # CRITICAL SECURITY CHECK: Never allow this in production
+    if os.getenv("APP_ENV") == "development" and parsed_data.get("hash") == "mock":
         print("⚠️  MOCK AUTH DETECTED - ALLOWING FOR DEV")
         print(f"User Data: {parsed_data.get('user')}")
         return json.loads(parsed_data["user"])

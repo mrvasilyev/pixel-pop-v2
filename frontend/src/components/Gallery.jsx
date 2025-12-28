@@ -82,7 +82,14 @@ const Gallery = () => {
 
         } catch (err) {
             console.error("Generation failed:", err);
-            // Ideally show error toast
+
+            // Safety Check Handling
+            const errStr = err.toString().toLowerCase();
+            if (errStr.includes("safety_check") || errStr.includes("safety system")) {
+                alert("⚠️ Request Rejected: Your image contains prohibited content (violence or nudity). Please try a different photo.");
+            } else {
+                alert("❌ Generation Failed: " + (err.message || "Unknown error"));
+            }
         } finally {
             stopGeneration();
         }

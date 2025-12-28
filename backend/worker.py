@@ -15,7 +15,16 @@ from supabase import create_client, Client
 # Initialize Services
 # Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("VITE_SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("VITE_SUPABASE_KEY") or os.getenv("VITE_SUPABASE_ANON_KEY")
+# WORKER AUDIT: Must use Service Role (SUPABASE_KEY) in production for reliability
+if os.getenv("APP_ENV") == "development":
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("VITE_SUPABASE_KEY") or os.getenv("VITE_SUPABASE_ANON_KEY")
+    if not os.getenv("SUPABASE_KEY"):
+        print("⚠️  DEV WARN: Helper using ANON KEY. Some admin tasks might fail.")
+else:
+    # Production Strictness
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+    if not SUPABASE_KEY:
+        print("❌ CRITICAL: SUPABASE_KEY (Service Role) missing in Production!")
 supabase: Client = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
@@ -152,6 +161,12 @@ async def generate_with_retry(prompt, model_config):
 
     except Exception as e:
         print(f"❌ OpenAI API Error: {e}")
+        # Detect Content Policy Violation (HTTP 400 from OpenAI)
+        err_str = str(e).lower()
+        if "content_policy_violation" in err_str or "safety_system" in err_str or (hasattr(e, 'status_code') and e.status_code == 400):
+             print("⚠️ Safety Check Triggered")
+             raise ValueError("SAFETY_CHECK: Your prompt was flagged by the safety system.")
+             
         # If available, print full response info
         if hasattr(e, 'response') and e.response:
              print(f"❌ Error Response Body: {e.response.text}")
