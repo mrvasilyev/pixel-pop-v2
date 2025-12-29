@@ -1,8 +1,7 @@
-import React from 'react';
-import { X, Download, Share2 } from 'lucide-react';
+import { X, Download, Share2, Trash2 } from 'lucide-react';
 import './MainScreen.css';
 
-const PreviewModal = ({ image, onClose }) => {
+const PreviewModal = ({ image, onClose, onDelete }) => {
     if (!image) return null;
 
     // Handle background click to close
@@ -55,6 +54,34 @@ const PreviewModal = ({ image, onClose }) => {
         }
     };
 
+    const handleDelete = () => {
+        const tg = window.Telegram?.WebApp;
+
+        // showConfirm requires Bot API 6.2+
+        if (tg && tg.showConfirm && tg.isVersionAtLeast && tg.isVersionAtLeast('6.2')) {
+            try {
+                tg.showConfirm("Delete this image?", (confirmed) => {
+                    if (confirmed) {
+                        if (onDelete) onDelete(image);
+                        else onClose();
+                    }
+                });
+            } catch (e) {
+                // Should not happen with version check, but extra safety
+                if (window.confirm('Delete this image?')) {
+                    if (onDelete) onDelete(image);
+                    else onClose();
+                }
+            }
+        } else {
+            // Fallback for Local Dev, Web, or older Telegram versions (< 6.2)
+            if (window.confirm('Are you sure you want to delete this image?')) {
+                if (onDelete) onDelete(image);
+                else onClose();
+            }
+        }
+    };
+
     const platform = window.Telegram?.WebApp?.platform || 'unknown';
 
     return (
@@ -66,8 +93,10 @@ const PreviewModal = ({ image, onClose }) => {
                 </button>
 
                 <div className="preview-header-right">
-                    {/* Info Button - styled as circle */}
-                    {/* <button className="preview-icon-btn"><Info size={20} /></button> */}
+                    {/* Delete Button */}
+                    <button className="preview-close-btn" onClick={handleDelete}>
+                        <Trash2 size={24} />
+                    </button>
 
                     <button className="preview-pill-btn variant-dark" onClick={handleDownload}>
                         Save

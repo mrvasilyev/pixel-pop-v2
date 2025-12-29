@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import './MainScreen.css';
 import { Sparkles, Lollipop } from 'lucide-react';
 import headerData from '../content/header.json';
-import { generateImage, uploadImage } from '../api/client';
+import { generateImage, uploadImage, deleteGeneration } from '../api/client';
 import { useGallery } from '../hooks/useGallery';
 import { useUser } from '../context/UserContext';
 import PreviewModal from './PreviewModal'; // New Import
@@ -273,6 +273,14 @@ const Gallery = () => {
             <PreviewModal
                 image={selectedImage}
                 onClose={() => setSelectedImage(null)}
+                onDelete={async (img) => {
+                    // Optimistic UI Update
+                    setImages(prev => prev.filter(i => i.id !== img.id));
+                    setSelectedImage(null);
+
+                    // Backend Call
+                    await deleteGeneration(img.id);
+                }}
             />
         </div>
     );
