@@ -69,8 +69,10 @@ async def update_db_status(job_id, status, result_url=None, job_details=None, co
         # If we have full details (user_id, prompt), merge them for UPSERT
         if job_details:
             data["user_id"] = job_details.get("user_id")
-            # Use 'slug' for the DB prompt column if available, else full prompt
-            data["prompt"] = job_details.get("slug") or job_details.get("prompt")
+            data["prompt"] = job_details.get("prompt")
+            # Save style_slug if available
+            if job_details.get("style_slug"):
+                data["style_slug"] = job_details.get("style_slug")
             # Save parameters (model_config)
             if "model_config" in job_details:
                 data["parameters"] = json.dumps(job_details["model_config"])

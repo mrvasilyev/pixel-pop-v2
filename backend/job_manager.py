@@ -19,13 +19,14 @@ class JobManager:
             except Exception as e:
                 print(f"⚠️ Failed to connect to Redis: {e}. Falling back to In-Memory.")
 
-    async def enqueue_job(self, prompt: str, model_config: dict, user_id: int) -> str:
+    async def enqueue_job(self, prompt: str, model_config: dict, user_id: int, style_slug: str = None) -> str:
         print(f"DEBUG: JobManager({id(self)}) Enqueueing job for user {user_id}")
         job_id = str(uuid.uuid4())
         job_data = {
             "id": job_id,
             "user_id": user_id,
             "prompt": prompt,
+            "style_slug": style_slug,
             "model_config": model_config,
             "status": "PENDING",
             "created_at": str(asyncio.get_event_loop().time())

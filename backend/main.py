@@ -197,7 +197,11 @@ async def create_generation_job(
     # JobManager.enqueue_job just stores the dict. We can add it to model_config.
     model_config["should_watermark"] = should_watermark
     
-    job_id = await job_manager.enqueue_job(prompt, model_config, user_id)
+    # Parse slug (style_slug) from request body parameters
+    # Note: frontend sends 'slug' in body
+    style_slug = body.get('slug')
+    
+    job_id = await job_manager.enqueue_job(prompt, model_config, user_id, style_slug=style_slug)
     
     return {
         "job_id": job_id,
