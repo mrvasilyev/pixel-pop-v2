@@ -139,8 +139,8 @@ const PreviewModal = ({ image, onClose, onDelete, onFeedback }) => {
                     <button
                         onClick={() => handleFeedback('thumbs_up')}
                         style={{
-                            background: image.feedback === 'thumbs_up' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)',
-                            border: image.feedback === 'thumbs_up' ? '1px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+                            background: image.feedback === 'thumbs_up' ? '#ffffff' : 'rgba(255, 255, 255, 0.1)',
+                            border: image.feedback === 'thumbs_up' ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.2)',
                             borderRadius: '50%',
                             width: '40px',
                             height: '40px',
@@ -149,7 +149,7 @@ const PreviewModal = ({ image, onClose, onDelete, onFeedback }) => {
                             justifyContent: 'center',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
-                            color: 'white'
+                            color: image.feedback === 'thumbs_up' ? '#000000' : 'white'
                         }}
                     >
                         <ThumbsUp size={20} strokeWidth={2} />
@@ -158,8 +158,8 @@ const PreviewModal = ({ image, onClose, onDelete, onFeedback }) => {
                     <button
                         onClick={() => handleFeedback('thumbs_down')}
                         style={{
-                            background: image.feedback === 'thumbs_down' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(255, 255, 255, 0.1)',
-                            border: image.feedback === 'thumbs_down' ? '1px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+                            background: image.feedback === 'thumbs_down' ? '#ffffff' : 'rgba(255, 255, 255, 0.1)',
+                            border: image.feedback === 'thumbs_down' ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.2)',
                             borderRadius: '50%',
                             width: '40px',
                             height: '40px',
@@ -168,7 +168,7 @@ const PreviewModal = ({ image, onClose, onDelete, onFeedback }) => {
                             justifyContent: 'center',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
-                            color: 'white'
+                            color: image.feedback === 'thumbs_down' ? '#000000' : 'white'
                         }}
                     >
                         <ThumbsDown size={20} strokeWidth={2} />

@@ -273,8 +273,10 @@ const Gallery = () => {
                     queryClient.invalidateQueries({ queryKey: ['gallery'] });
                 }}
                 onFeedback={async (img, feedback) => {
-                    // 1. Optimistic Update (if we had specific state for it on img, e.g. img.feedback)
-                    setImages(prev => prev.map(i => i.id === img.id ? { ...i, feedback } : i));
+                    // 1. Optimistic Update
+                    const updatedImage = { ...img, feedback };
+                    setSelectedImage(updatedImage); // Fix: Update the modal's state directly
+                    setImages(prev => prev.map(i => i.id === img.id ? updatedImage : i));
 
                     // 2. React Query Update
                     queryClient.setQueryData(['gallery'], (oldData) => {
@@ -283,7 +285,7 @@ const Gallery = () => {
                             ...oldData,
                             pages: oldData.pages.map(page => ({
                                 ...page,
-                                items: page.items.map(i => i.id === img.id ? { ...i, feedback } : i)
+                                items: page.items.map(i => i.id === img.id ? updatedImage : i)
                             }))
                         };
                     });
