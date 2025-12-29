@@ -1,7 +1,7 @@
-import { X, Download, Share2, Trash2 } from 'lucide-react';
+import { X, Download, Share2, Trash2, ThumbsUp, ThumbsDown } from 'lucide-react';
 import './MainScreen.css';
 
-const PreviewModal = ({ image, onClose, onDelete }) => {
+const PreviewModal = ({ image, onClose, onDelete, onFeedback }) => {
     if (!image) return null;
 
     // Handle background click to close
@@ -82,6 +82,21 @@ const PreviewModal = ({ image, onClose, onDelete }) => {
         }
     };
 
+    const handleFeedback = async (type) => {
+        // Optimistic UI could be handled by parent, but for now just local effect if we had local state
+        // For now, trigger callback or API
+        try {
+            if (onFeedback) onFeedback(image, type);
+
+            // Native Telegram Alert
+            if (window.Telegram?.WebApp?.showAlert) {
+                window.Telegram.WebApp.showAlert("Thanks for your feedback!");
+            }
+        } catch (e) {
+            console.error("Feedback error", e);
+        }
+    };
+
     const platform = window.Telegram?.WebApp?.platform || 'unknown';
 
     return (
@@ -109,6 +124,56 @@ const PreviewModal = ({ image, onClose, onDelete }) => {
 
             <div className="preview-image-container">
                 <img src={image.src} alt="Preview" className="preview-img" />
+
+                {/* Feedback Controls - Right Aligned Under Photo */}
+                {/* Feedback Controls - Right Aligned Under Photo */}
+                <div className="feedback-controls" style={{
+                    width: '100%',
+                    maxWidth: '80vh',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: '12px',
+                    marginTop: '12px',
+                    paddingRight: '4px'
+                }}>
+                    <button
+                        onClick={() => handleFeedback('thumbs_up')}
+                        style={{
+                            background: image.feedback === 'thumbs_up' ? '#ffffff' : 'rgba(255, 255, 255, 0.1)',
+                            border: image.feedback === 'thumbs_up' ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            color: image.feedback === 'thumbs_up' ? '#000000' : 'white'
+                        }}
+                    >
+                        <ThumbsUp size={20} strokeWidth={2} />
+                    </button>
+
+                    <button
+                        onClick={() => handleFeedback('thumbs_down')}
+                        style={{
+                            background: image.feedback === 'thumbs_down' ? '#ffffff' : 'rgba(255, 255, 255, 0.1)',
+                            border: image.feedback === 'thumbs_down' ? '1px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '50%',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            color: image.feedback === 'thumbs_down' ? '#000000' : 'white'
+                        }}
+                    >
+                        <ThumbsDown size={20} strokeWidth={2} />
+                    </button>
+                </div>
             </div>
         </div>
     );
