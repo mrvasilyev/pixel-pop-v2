@@ -35,7 +35,8 @@ else:
     origins = [
         "https://pixelpop.v2.frnt.d-t-a.ae",
         "https://test.pixelpop.v2.frnt.d-t-a.ae",
-        "http://localhost:5174"
+        "http://localhost:5174",
+        "http://127.0.0.1:5174"
     ]
 
 app.add_middleware(
