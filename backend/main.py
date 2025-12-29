@@ -267,6 +267,43 @@ async def delete_generation(
         print(f"❌ Archive Failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/generation/{job_id}/feedback")
+async def submit_feedback(
+    job_id: str,
+    request: Request,
+    authorization: str = Header(...)
+):
+    """
+    Submit user feedback (thumbs_up / thumbs_down) for a generation.
+    """
+    user_id = verify_jwt_token(authorization, JWT_SECRET)
+    
+    body = await request.json()
+    feedback = body.get("feedback")
+    
+    if feedback not in ["thumbs_up", "thumbs_down"]:
+         raise HTTPException(status_code=400, detail="Invalid feedback value")
+         
+    # Import locally
+    from worker import supabase
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    try:
+        # Update using job_id and user_id for security
+        res = supabase.table("generations").update({"feedback": feedback})\
+            .eq("id", job_id)\
+            .eq("user_id", user_id)\
+            .execute()
+            
+        return {"ok": True, "job_id": job_id, "feedback": feedback}
+
+    except Exception as e:
+        print(f"❌ Feedback Failed: {e}")
+        # If column doesn't exist yet, this will fail.
+        # But we assume migration ran or will run.
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/results") # Was generations, but let's check legacy
 async def list_generations(authorization: str = Header(...)):
     """

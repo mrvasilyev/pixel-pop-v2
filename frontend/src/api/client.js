@@ -192,3 +192,23 @@ export const deleteGeneration = async (id) => {
     }
 };
 
+// 6. Send Feedback
+export const sendFeedback = async (id, feedback) => {
+    try {
+        const token = await login();
+        const res = await fetch(`${API_BASE}/api/generation/${id}/feedback`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ feedback })
+        });
+
+        if (!res.ok) throw new Error('Failed to submit feedback');
+        return true;
+    } catch (error) {
+        console.error("Feedback failed:", error);
+        return false;
+    }
+};

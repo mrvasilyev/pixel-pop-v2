@@ -272,6 +272,29 @@ const Gallery = () => {
                     // 4. Invalidate to ensure consistency (optional but safe)
                     queryClient.invalidateQueries({ queryKey: ['gallery'] });
                 }}
+                onFeedback={async (img, feedback) => {
+                    // 1. Optimistic Update (if we had specific state for it on img, e.g. img.feedback)
+                    setImages(prev => prev.map(i => i.id === img.id ? { ...i, feedback } : i));
+
+                    // 2. React Query Update
+                    queryClient.setQueryData(['gallery'], (oldData) => {
+                        if (!oldData) return oldData;
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map(page => ({
+                                ...page,
+                                items: page.items.map(i => i.id === img.id ? { ...i, feedback } : i)
+                            }))
+                        };
+                    });
+
+                    // 3. Close Modal (optional?) User might want to keep looking
+                    // setSelectedImage(null); 
+
+                    // 4. API Call
+                    const { sendFeedback } = await import('../api/client');
+                    await sendFeedback(img.id, feedback);
+                }}
             />
         </div>
     );
