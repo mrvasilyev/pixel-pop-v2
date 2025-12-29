@@ -172,15 +172,10 @@ function AppInitializer() {
                     const viewportMounted = await safeMount(viewport, 'viewport');
                     if (viewportMounted) {
                         try {
+                            if (viewport.requestFullscreen) viewport.requestFullscreen();
                             if (viewport.expand) viewport.expand();
                             if (viewport.bindCssVars) viewport.bindCssVars();
-                        } catch (e) { console.warn("Viewport expand/bind error", e); }
-                    }
-                    if (viewportMounted) {
-                        try {
-                            if (viewport.expand) viewport.expand();
-                            if (viewport.bindCssVars) viewport.bindCssVars();
-                        } catch (e) { console.warn("Viewport expand/bind error", e); }
+                        } catch (e) { console.warn("Viewport fullscreen/expand/bind error", e); }
                     }
                 }
 
