@@ -35,7 +35,6 @@ else:
     origins = [
         "https://pixelpop.v2.frnt.d-t-a.ae",
         "https://test.pixelpop.v2.frnt.d-t-a.ae",
-        "http://localhost:5173",
         "http://localhost:5174"
     ]
 
@@ -229,7 +228,46 @@ async def get_generation_status(
         "error": job.get("error")
     }
 
-@app.get("/api/generations")
+@app.delete("/api/generation/{job_id}")
+async def delete_generation(
+    job_id: str,
+    authorization: str = Header(...)
+):
+    """
+    Soft-delete (archive) a generation.
+    """
+    user_id = verify_jwt_token(authorization, JWT_SECRET)
+    
+    # Import locally
+    from worker import supabase
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
+    try:
+        # Check ownership and update
+        # We can do it in one go with update().eq().eq()
+        # If row doesn't exist or not owned, it returns count 0, which is fine (idempotent)
+        # or we might want to know.
+        
+        res = supabase.table("generations").update({"is_archived": True})\
+            .eq("id", job_id)\
+            .eq("user_id", user_id)\
+            .execute()
+            
+        if not res.data:
+            # Either ID wrong or User wrong
+            # Check if exists to return 404 or 403? 
+            # For simplicity, return 200 OK (idempotent) or 404 if strict.
+            # Let's return 200 OK.
+            pass
+            
+        return {"ok": True, "job_id": job_id}
+
+    except Exception as e:
+        print(f"❌ Archive Failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/results") # Was generations, but let's check legacy
 async def list_generations(authorization: str = Header(...)):
     """
     Protected Endpoint: List list user's processed generations.
@@ -255,6 +293,7 @@ async def list_generations(authorization: str = Header(...)):
         response = supabase.table("generations")\
             .select("*")\
             .eq("user_id", user_id)\
+            .eq("is_archived", False)\
             .order("created_at", desc=True)\
             .execute()
         
@@ -301,6 +340,7 @@ async def get_gallery(
             .select("*")\
             .eq("user_id", user_id)\
             .eq("status", "COMPLETED")\
+            .eq("is_archived", False)\
             .order("created_at", desc=True)\
             .limit(limit + 1) # Fetch one extra to check if there's more
 

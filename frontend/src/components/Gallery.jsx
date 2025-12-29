@@ -1,26 +1,27 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import './MainScreen.css';
 import { Sparkles, Lollipop } from 'lucide-react';
 import headerData from '../content/header.json';
-import { generateImage, uploadImage } from '../api/client';
+import { generateImage, uploadImage, deleteGeneration } from '../api/client';
 import { useGallery } from '../hooks/useGallery';
 import { useUser } from '../context/UserContext';
-import PreviewModal from './PreviewModal'; // New Import
-import ManifestingImage from './ManifestingImage'; // New Import
-import Skeleton from './Skeleton'; // New Import
-import FadeImage from './FadeImage'; // New Import
-
+import PreviewModal from './PreviewModal';
+import ManifestingImage from './ManifestingImage';
+import Skeleton from './Skeleton';
+import FadeImage from './FadeImage';
 import { usePhotoAction } from '../hooks/usePhotoAction';
-
 import { useGeneration } from '../context/GenerationContext';
 
 const Gallery = () => {
+    const queryClient = useQueryClient();
+
     // State for gallery images
-    const [images, setImages] = React.useState([]);
+    const [images, setImages] = useState([]);
     // Global generation state
     const { isGenerating, loadingWord, dots, previewUrl, startGeneration, stopGeneration } = useGeneration();
-    const [selectedImage, setSelectedImage] = React.useState(null); // Preview State
-    const [, setShowDebug] = React.useState(false); // Debug State
+    const [selectedImage, setSelectedImage] = useState(null); // Preview State
+    const [, setShowDebug] = useState(false); // Debug State
 
     // Handler for photo selection from CTA or other sources
     const handlePhotoSelected = async (file) => {
@@ -35,34 +36,10 @@ const Gallery = () => {
             const imageUrl = await uploadImage(file);
 
             // 2.5 Calculate Aspect Ratio for Generation Size
-            // 2.5 Aspect Ratio Check
-            // NOTE: We Force 1024x1024 (Square) because 'gpt-image-1.5' (Edit/Img2Img) likely relies on DALL-E 2 logic
-            // which center-crops non-square inputs or only supports square. 
-            // Requesting Portrait (1024x1792) caused "Cut Top/Bottom" issues.
+            // NOTE: We Force 1024x1024 (Square) because 'gpt-image-1.5' likely relies on DALL-E 2 logic
             let genSize = "1024x1024";
-            /* 
-            try {
-                const img = new Image();
-                img.src = objectUrl;
-                await new Promise(resolve => { img.onload = resolve; });
-                const ratio = img.width / img.height;
-
-                if (ratio > 1.1) genSize = "1792x1024"; // Landscape
-                else if (ratio < 0.9) genSize = "1024x1792"; // Portrait
-                // else Square
-                console.log(`📏 Auto Aspect Ratio: ${ratio.toFixed(2)} -> ${genSize}`);
-            } catch (e) {
-                console.warn("Aspect ratio check failed, defaulting to square", e);
-            }
-            */
 
             // 3. Generate with Special Prompt
-            // Use 'header-special' as style_id or a generic one if not needed by backend for this specific flow
-            // Ideally we should have a styleId but header.json doesn't have one. 
-            // We'll pass 'header-special' which the backend might treat as valid or ignored depending on logic.
-            // Or better: Use the first style ID or a dedicated one. 
-            // For now, let's use a safe default "80s-studio" or similar if we knew it.
-            // But since client.js uses it in model_config, let's pass 'header-special'.
             const result = await generateImage(
                 headerData.specialPrompt,
                 'header-special',
@@ -70,10 +47,9 @@ const Gallery = () => {
                 { init_image: imageUrl, size: genSize }
             );
 
-            // 4. Update Images (Handled by React Query or Manual Append)
-            // Ideally we invalidate query, but for instant feedback we append:
+            // 4. Update Images
             const newImage = {
-                id: Date.now(), // Temp ID
+                id: result.id || Date.now(),
                 src: result.image_url,
                 created_at: new Date().toISOString()
             };
@@ -103,10 +79,8 @@ const Gallery = () => {
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useGallery();
 
     // Initialize debug state
-    React.useEffect(() => {
+    useEffect(() => {
         if (typeof window !== 'undefined') {
-            // We can't use lazy init for useState because we are in a component that might be SSR'd?
-            // Actually, just suppress the lint. It's safe here (run once).
             const params = new URLSearchParams(window.location.search);
             if (params.get('debug') === '1') {
                 setShowDebug(true);
@@ -131,14 +105,27 @@ const Gallery = () => {
     }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
     // Sync React Query data to local state AND update localStorage cache
-    React.useEffect(() => {
+    useEffect(() => {
         if (data) {
             const allImages = data.pages.flatMap(page => page.items);
             if (allImages.length > 0) {
                 localStorage.setItem('user_has_photos', 'true');
                 setImages(prev => {
                     const existingIds = new Set(prev.map(img => img.id));
+                    // Check if items in data are NOT in prev. 
+                    // However, if we deleted an item from prev, it IS in data (until invalidated).
+                    // This logic ADDs missing items.
+                    // If we just deleted ID 123 from prev, existingIds doesn't have 123.
+                    // But allImages (from stale cache) HAS 123.
+                    // So newItems includes 123.
+                    // And it gets added back.
+                    // This confirms the bug.
+                    // The Fix is to ensure 'data' is updated via queryClient.setQueryData in onDelete.
+
                     const newItems = allImages.filter(h => !existingIds.has(h.id));
+
+                    // Note: If we really want to respect deletions, we ideally shouldn't merge blindly.
+                    // But assuming cache is updated, this is fine.
                     return [...newItems, ...prev].sort((a, b) => b.created_at?.localeCompare(a.created_at) || 0);
                 });
             } else {
@@ -148,24 +135,14 @@ const Gallery = () => {
                 }
             }
         }
-    }, [data, isGenerating, images.length]);
+    }, [data, isGenerating, images.length]); // Dependencies include data
 
     // Fast Check: Use localStorage to determine if we should show skeleton
-    // Default to false (Empty State) if not set, to satisfy "no skeleton for empty users" request
-    const cachedHasPhotos = React.useMemo(() => localStorage.getItem('user_has_photos') === 'true', []);
+    const cachedHasPhotos = useMemo(() => localStorage.getItem('user_has_photos') === 'true', []);
 
     // Show loading IF: We are generating OR (We are loading AND we think user has photos)
-    // If We are loading but think user has NO photos -> fall through to Empty State
     const showLoading = isGenerating || (isLoading && cachedHasPhotos);
 
-    // Helper to scroll to styles - Unused for now
-    // const scrollToStyles = () => {
-    //     const stylesSection = document.querySelector('.h-scroll-list');
-    //     if (stylesSection) stylesSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // };
-
-    // Updated CTA Handler
-    // Updated CTA Handler
     const { user, openPaywall } = useUser();
 
     const handleGenerate = async () => {
@@ -189,7 +166,6 @@ const Gallery = () => {
                     {/* Loading Placeholder for Generation */}
                     {isGenerating && (
                         <div className="gallery-item loading-placeholder animate-enter">
-                            {/* Preview Background */}
                             {previewUrl && (
                                 <img
                                     src={previewUrl}
@@ -250,7 +226,7 @@ const Gallery = () => {
                             ref={loadMoreRef}
                             style={{
                                 gridColumn: '1 / -1',
-                                height: '20px', // Keep height for intersection detection
+                                height: '20px',
                                 marginTop: '20px'
                             }}
                         />
@@ -273,6 +249,29 @@ const Gallery = () => {
             <PreviewModal
                 image={selectedImage}
                 onClose={() => setSelectedImage(null)}
+                onDelete={async (img) => {
+                    // 1. Optimistic UI Update (Local State)
+                    setSelectedImage(null);
+                    setImages(prev => prev.filter(i => i.id !== img.id));
+
+                    // 2. Update React Query Cache (Prevent Re-Sync)
+                    queryClient.setQueryData(['gallery'], (oldData) => {
+                        if (!oldData) return oldData;
+                        return {
+                            ...oldData,
+                            pages: oldData.pages.map(page => ({
+                                ...page,
+                                items: page.items.filter(i => i.id !== img.id)
+                            }))
+                        };
+                    });
+
+                    // 3. Backend Call
+                    await deleteGeneration(img.id);
+
+                    // 4. Invalidate to ensure consistency (optional but safe)
+                    queryClient.invalidateQueries({ queryKey: ['gallery'] });
+                }}
             />
         </div>
     );

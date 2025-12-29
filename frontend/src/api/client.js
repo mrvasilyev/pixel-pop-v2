@@ -22,7 +22,7 @@ const getTelegramInitData = () => {
       params.append('query_id', 'AAF');
       params.append('user', JSON.stringify(mockUser));
       params.append('auth_date', '1712234000');
-      params.append('hash', 'mockhash123');
+      params.append('hash', 'mock');
       
       return params.toString();
   }
@@ -172,6 +172,23 @@ export const fetchGenerations = async () => {
     } catch (error) {
         console.error("Fetch history failed:", error);
         return [];
+    }
+};
+
+// 5. Delete (Archive) Generation
+export const deleteGeneration = async (id) => {
+    try {
+        const token = await login();
+        const res = await fetch(`${API_BASE}/api/generation/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to delete generation');
+        return true;
+    } catch (error) {
+        console.error("Delete failed:", error);
+        return false;
     }
 };
 
