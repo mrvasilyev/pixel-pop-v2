@@ -9,7 +9,11 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export default function TopStyles() {
     const stylesGlob = import.meta.glob('../content/styles/*.json', { eager: true });
-    const styles = Object.values(stylesGlob).map(mod => mod.default || mod).sort((a, b) => (a.order || 0) - (b.order || 0));
+    const styles = Object.entries(stylesGlob).map(([path, mod]) => {
+        const item = mod.default || mod;
+        const slug = path.split('/').pop().replace('.json', '');
+        return { ...item, slug };
+    }).sort((a, b) => (a.order || 0) - (b.order || 0));
 
     const pendingStyleRef = React.useRef(null);
     const queryClient = useQueryClient();
@@ -37,7 +41,7 @@ export default function TopStyles() {
             // 2. Start Generation
             // Use the style's prompt + init_image
             const prompt = style.prompt || `A photo in ${style.title} style`;
-            await generateImage(prompt, style.title, 'style-transfer', {
+            await generateImage(prompt, style.title, style.slug || 'style-transfer', {
                 init_image: url,
                 quality: isPremiumMode ? 'high' : 'standard'
             });
